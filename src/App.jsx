@@ -24,7 +24,7 @@ const endpointGroups = [
 ]
 const allEndpoints = endpointGroups.flatMap(group => group.items)
 const slug = value => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-const endpointFromHash = () => allEndpoints.find(item => item.method === 'POST' && slug(item.name) === window.location.hash.match(/^#\/try-it-now\/(.+)$/)?.[1]) ?? allEndpoints.find(item => item.method === 'POST')
+const endpointFromHash = () => allEndpoints.find(item => slug(item.name) === window.location.hash.match(/^#\/(?:try-it-now|endpoint)\/(.+)$/)?.[1]) ?? allEndpoints.find(item => item.method === 'POST')
 function Icon({ name, ...props }) {
   const paths = {
     back: 'm14 6-6 6 6 6M8 12h12',
@@ -35,6 +35,8 @@ function Icon({ name, ...props }) {
     copy: 'M8 8h12v12H8zM16 8V4H4v12h4',
     reset: 'M4 10a8 8 0 1 1 1 7M4 4v6h6',
     close: 'm6 6 12 12M6 18 18 6',
+    sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42',
+    moon: 'M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z',
   }
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}><path d={paths[name] || paths.video}/></svg>
 }
@@ -200,12 +202,32 @@ function OmniHumanForm({ onPreview }) {
 }
 function App() {
   const [activeEndpoint, setActiveEndpoint] = useState(endpointFromHash)
+  const [isTryPage, setIsTryPage] = useState(() => window.location.hash.startsWith('#/try-it-now/'))
+  const [expandedGroups, setExpandedGroups] = useState(() => Object.fromEntries(endpointGroups.map(group => [group.name, true])))
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [theme, setTheme] = useState(() => localStorage.getItem('try-it-theme') === 'light' ? 'light' : 'dark')
   useEffect(() => {
-    const syncEndpoint = () => setActiveEndpoint(endpointFromHash())
+    const syncEndpoint = () => {
+      setActiveEndpoint(endpointFromHash())
+      setIsTryPage(window.location.hash.startsWith('#/try-it-now/'))
+    }
     window.addEventListener('popstate', syncEndpoint)
     window.addEventListener('hashchange', syncEndpoint)
     return () => { window.removeEventListener('popstate', syncEndpoint); window.removeEventListener('hashchange', syncEndpoint) }
   }, [])
+  useEffect(() => { localStorage.setItem('try-it-theme', theme) }, [theme])
+  const selectEndpoint = item => {
+    setActiveEndpoint(item)
+    setPreview(null)
+    window.history.pushState({}, '', `#/endpoint/${slug(item.name)}`)
+    setIsTryPage(false)
+    setSidebarOpen(false)
+  }
+  const openTryIt = () => {
+    setPreview(null)
+    window.history.pushState({}, '', `#/try-it-now/${slug(activeEndpoint.name)}`)
+    setIsTryPage(true)
+  }
   const [form, setForm] = useState(initialForm)
   const [media, setMedia] = useState({ images: [], videos: [] })
   const [preview, setPreview] = useState(null)
@@ -251,11 +273,21 @@ function App() {
     try { await navigator.clipboard.writeText(JSON.stringify(preview, null, 2)); setCopied(true) }
     catch { setError('คัดลอกไม่ได้ กรุณาเลือกข้อความจาก Preview แล้วคัดลอก') }
   }
-  return <div className="app-shell"><div className="try-main">
+  return <div className={`app-shell ${theme === 'light' ? 'light-mode' : ''}`}>
+    {!isTryPage && sidebarOpen && <button className="sidebar-scrim" aria-label="Close endpoint menu" onClick={() => setSidebarOpen(false)}/>}
+    {!isTryPage && <aside className={`endpoint-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
+      <a className="sidebar-brand" href="#/"><span>API Integration v1.0</span><strong>Botnoi AI Gateway</strong></a>
+      <nav aria-label="API endpoints">{endpointGroups.map(group => <section className="sidebar-group" key={group.name}>
+        <button className="sidebar-group-title" aria-expanded={expandedGroups[group.name]} onClick={() => setExpandedGroups(current => ({ ...current, [group.name]: !current[group.name] }))}><span>{group.name}</span><span className={`group-chevron ${expandedGroups[group.name] ? '' : 'collapsed'}`}>⌄</span></button>
+        {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} className={`endpoint-tab ${activeEndpoint.name === item.name && !isTryPage ? 'active' : ''}`} onClick={() => selectEndpoint(item)}><span className={`sidebar-method ${item.method.toLowerCase()}`}>{item.method}</span><span className="sidebar-endpoint-name">{item.name}</span></button>)}</div>}
+      </section>)}</nav>
+    </aside>}
+    {isTryPage ? <div className="try-main">
     <header className="topbar">
-      <button className="back-button" onClick={() => { if (window.history.length > 1) window.history.back(); else window.location.assign('https://api-button-nine.vercel.app/') }}><Icon name="back"/>Back</button>
+      <button className="back-button" onClick={() => { window.history.pushState({}, '', `#/endpoint/${slug(activeEndpoint.name)}`); setIsTryPage(false) }}><Icon name="back"/>Back</button>
       <span className="header-divider"/>
       <div className="page-identity"><span className="method">{activeEndpoint.method}</span><h1>{activeEndpoint.name}</h1></div>
+      <button className="theme-toggle" type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} onClick={() => setTheme(current => current === 'dark' ? 'light' : 'dark')}><Icon name={theme === 'dark' ? 'sun' : 'moon'} width="17" height="17"/><span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button>
     </header>
     <main className="workspace">
       <section className="input-panel" aria-label={activeEndpoint.name === 'Create InfiniteTalk avatar' || activeEndpoint.name === 'Create OmniHuman avatar' ? 'Avatar settings' : activeEndpoint.name === 'Create SeeDream 4.5 image' ? 'Image settings' : activeEndpoint.name === 'Create Motion Control video' ? 'Motion Control settings' : 'Video settings'}>
@@ -294,6 +326,10 @@ function App() {
         <div className="preview-bottom"><span className={`status-dot ${preview ? 'ready' : ''}`}/><span>{preview ? 'Request preview ready' : 'Waiting for your input'}</span><span className="format-label">application/json</span></div>
       </section>
     </main>
-  </div></div>
+  </div> : <div className="catalog-main">
+    <header className="catalog-topbar"><button className="sidebar-menu-button catalog-menu-button" aria-label="Open endpoint menu" onClick={() => setSidebarOpen(true)}><span/><span/><span/></button><span>API Endpoints</span><button className="theme-toggle" type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} onClick={() => setTheme(current => current === 'dark' ? 'light' : 'dark')}><Icon name={theme === 'dark' ? 'sun' : 'moon'} width="17" height="17"/><span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button></header>
+    <main className="catalog-content">{activeEndpoint.method === 'POST' && <button className="endpoint-launch-button" onClick={openTryIt}>Try it <Icon name="arrow" width="17" height="17"/></button>}</main>
+  </div>}
+  </div>
 }
 export default App

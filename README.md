@@ -30,7 +30,7 @@ npm run dev
 | Create OmniHuman avatar | `create-omnihuman-avatar` |
 | Create SeeDream 4.5 image | `create-seedream-4-5-image` |
 
-หน้า Try it อ่าน slug จาก URL และเปิดฟอร์มของ endpoint นั้นโดยตรง ปุ่ม Back ใช้กลับไปยังหน้าเอกสารเดิม ส่วน GET ยังไม่มีหน้า Try it
+หน้า Try it อ่าน slug จาก URL และเปิดฟอร์มของ endpoint นั้นโดยตรง ปุ่ม Back กลับไปยังหน้า endpoint ที่มี sidebar ในต้นแบบ ส่วนในหน้า sidebar คลิกชื่อ endpoint เพื่อดูรายละเอียดและกดปุ่ม Try it เพื่อเปิดฟอร์ม ส่วน GET ยังไม่มีหน้า Try it
 
 ## ตรวจโปรเจกต์
 
@@ -40,3 +40,4 @@ npm run lint
 ```
 
 ฟอร์มและ Preview ในโปรเจกต์นี้เป็น UI prototype ยังไม่เรียก API จริง
+
