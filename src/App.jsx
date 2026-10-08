@@ -24,7 +24,7 @@ const endpointGroups = [
 ]
 const allEndpoints = endpointGroups.flatMap(group => group.items)
 const slug = value => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-const endpointFromHash = () => allEndpoints.find(item => slug(item.name) === window.location.hash.match(/^#\/try-it-now\/(.+)$/)?.[1]) ?? allEndpoints[0]
+const endpointFromHash = () => allEndpoints.find(item => item.method === 'POST' && slug(item.name) === window.location.hash.match(/^#\/try-it-now\/(.+)$/)?.[1]) ?? allEndpoints.find(item => item.method === 'POST')
 function Icon({ name, ...props }) {
   const paths = {
     back: 'm14 6-6 6 6 6M8 12h12',
@@ -200,25 +200,12 @@ function OmniHumanForm({ onPreview }) {
 }
 function App() {
   const [activeEndpoint, setActiveEndpoint] = useState(endpointFromHash)
-  const [isTryPage, setIsTryPage] = useState(() => window.location.hash.startsWith('#/try-it-now/'))
-  const [expandedGroups, setExpandedGroups] = useState(() => Object.fromEntries(endpointGroups.map(group => [group.name, true])))
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   useEffect(() => {
-    const syncEndpoint = () => {
-      setActiveEndpoint(endpointFromHash())
-      setIsTryPage(window.location.hash.startsWith('#/try-it-now/'))
-    }
+    const syncEndpoint = () => setActiveEndpoint(endpointFromHash())
     window.addEventListener('popstate', syncEndpoint)
     window.addEventListener('hashchange', syncEndpoint)
     return () => { window.removeEventListener('popstate', syncEndpoint); window.removeEventListener('hashchange', syncEndpoint) }
   }, [])
-  const selectEndpoint = item => {
-    setActiveEndpoint(item)
-    setPreview(null)
-    window.history.pushState({}, '', `#/try-it-now/${slug(item.name)}`)
-    setIsTryPage(true)
-    setSidebarOpen(false)
-  }
   const [form, setForm] = useState(initialForm)
   const [media, setMedia] = useState({ images: [], videos: [] })
   const [preview, setPreview] = useState(null)
@@ -264,19 +251,9 @@ function App() {
     try { await navigator.clipboard.writeText(JSON.stringify(preview, null, 2)); setCopied(true) }
     catch { setError('คัดลอกไม่ได้ กรุณาเลือกข้อความจาก Preview แล้วคัดลอก') }
   }
-  return <div className="app-shell">
-    {!isTryPage && sidebarOpen && <button className="sidebar-scrim" aria-label="Close endpoint menu" onClick={() => setSidebarOpen(false)}/>}
-    {!isTryPage && <aside className={`endpoint-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      <a className="sidebar-brand" href="#/"><span>API Integration v1.0</span><strong>Botnoi AI Gateway</strong></a>
-      <nav aria-label="API endpoints">{endpointGroups.map(group => <section className="sidebar-group" key={group.name}>
-        <button className="sidebar-group-title" aria-expanded={expandedGroups[group.name]} onClick={() => setExpandedGroups(current => ({ ...current, [group.name]: !current[group.name] }))}><span>{group.name}</span><span className={`group-chevron ${expandedGroups[group.name] ? '' : 'collapsed'}`}>⌄</span></button>
-        {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} disabled={item.method === 'GET'} aria-disabled={item.method === 'GET'} title={item.method === 'GET' ? 'ยังไม่พร้อมใช้งาน' : undefined} className={`endpoint-tab ${activeEndpoint.name === item.name ? 'active' : ''} ${item.method === 'GET' ? 'endpoint-unavailable' : ''}`} onClick={() => item.method === 'POST' && selectEndpoint(item)}><span className={`sidebar-method ${item.method.toLowerCase()}`}>{item.method}</span><span className="sidebar-endpoint-name">{item.name}</span></button>)}</div>}
-      </section>)}</nav>
-    </aside>}
-    {isTryPage ? <div className="try-main">
+  return <div className="app-shell"><div className="try-main">
     <header className="topbar">
-      <button className="sidebar-menu-button" aria-label="Open endpoint menu" onClick={() => setSidebarOpen(true)}><span/><span/><span/></button>
-      <button className="back-button" onClick={() => { window.history.pushState({}, '', '#/'); setIsTryPage(false) }}><Icon name="back"/>Back</button>
+      <button className="back-button" onClick={() => { if (window.history.length > 1) window.history.back(); else window.location.assign('https://api-button-nine.vercel.app/') }}><Icon name="back"/>Back</button>
       <span className="header-divider"/>
       <div className="page-identity"><span className="method">{activeEndpoint.method}</span><h1>{activeEndpoint.name}</h1></div>
     </header>
@@ -317,10 +294,6 @@ function App() {
         <div className="preview-bottom"><span className={`status-dot ${preview ? 'ready' : ''}`}/><span>{preview ? 'Request preview ready' : 'Waiting for your input'}</span><span className="format-label">application/json</span></div>
       </section>
     </main>
-    </div> : <main className="catalog-main">
-      <header className="catalog-topbar"><button className="sidebar-menu-button catalog-menu-button" aria-label="Open endpoint menu" onClick={() => setSidebarOpen(true)}><span/><span/><span/></button><span>Botnoi AI Gateway</span><span className="catalog-version">API Integration v1.0</span></header>
-      <section className="catalog-welcome"><span className="catalog-icon"><Icon name="code" width="26" height="26"/></span><h1>เลือก API ที่ต้องการทดลอง</h1><p className="catalog-copy">เลือกรายการ POST จากเมนูด้านซ้าย เพื่อเปิดฟอร์มและดูตัวอย่าง Request</p><div className="catalog-prompt"><span>เลือก endpoint จาก Sidebar เพื่อเริ่มต้น</span><Icon name="back" width="16" height="16"/></div></section>
-    </main>}
-  </div>
+  </div></div>
 }
 export default App

@@ -1,16 +1,42 @@
-# React + Vite
+# Botnoi API Try it prototype
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+ต้นแบบหน้า Try it แบบแยกหน้า รองรับการเปิดฟอร์มโดยตรงจากปุ่มบนหน้าเอกสารผ่าน endpoint slug ใน URL hash ไม่มีการส่ง request ไป API จริง
 
-Currently, two official plugins are available:
+## เปิดใช้งานในเครื่อง
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+## เตรียมลิงก์สำหรับปุ่ม Try it บนหน้าเอกสาร
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+เมื่อ deploy ต้นแบบแล้ว ให้ปุ่มบน endpoint ใช้ URL รูปแบบนี้และเปิดแท็บใหม่:
 
-## Expanding the Oxlint configuration
+```html
+<a href="{TRY_IT_APP_URL}/#/try-it-now/{endpoint-slug}" target="_blank" rel="noopener noreferrer">
+  Try it
+</a>
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+แทน `{TRY_IT_APP_URL}` ด้วย URL ที่ deploy แล้ว และใช้ slug จากตารางนี้:
+
+| Endpoint | Slug |
+| --- | --- |
+| Create Seedance 2.5 video | `create-seedance-2-5-video` |
+| Create SeeDance 2.0 / Mini video | `create-seedance-2-0-mini-video` |
+| Create Motion Control video | `create-motion-control-video` |
+| Create InfiniteTalk avatar | `create-infinitetalk-avatar` |
+| Create OmniHuman avatar | `create-omnihuman-avatar` |
+| Create SeeDream 4.5 image | `create-seedream-4-5-image` |
+
+หน้า Try it อ่าน slug จาก URL และเปิดฟอร์มของ endpoint นั้นโดยตรง ปุ่ม Back ใช้กลับไปยังหน้าเอกสารเดิม ส่วน GET ยังไม่มีหน้า Try it
+
+## ตรวจโปรเจกต์
+
+```bash
+npm run build
+npm run lint
+```
+
+ฟอร์มและ Preview ในโปรเจกต์นี้เป็น UI prototype ยังไม่เรียก API จริง
