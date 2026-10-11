@@ -1,0 +1,27 @@
+/* GPT Image - Prompt Validation */
+.app-shell .prompt-input.gpt-prompt-error {
+  border: 1px solid #ef4444;
+}
+
+.app-shell .prompt-input.gpt-prompt-error:focus-within {
+  border-color: #ef4444;
+}
+
+.gpt-prompt-error-message {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* GPT Image - Upload Validation */
+.app-shell .avatar-dropzone.gpt-image-error,
+.app-shell .avatar-dropzone.gpt-image-error:hover,
+.app-shell .avatar-dropzone.gpt-image-error:focus-within {
+  border-color: #ef4444;
+}
+
+.gpt-image-error-message {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 8px;
+}

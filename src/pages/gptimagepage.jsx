@@ -1,4 +1,5 @@
 import GPTImageForm from '../components/gpt-image/gptimageform'
+import '../components/gpt-image/gptimage.css'
 
 export default function GPTImagePage({
   onPreview,

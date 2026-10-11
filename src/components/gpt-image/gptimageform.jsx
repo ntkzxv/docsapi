@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import GPTImageSelect from './gptimageselect'
 
 const initialForm = {
@@ -17,28 +17,20 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal })
     const [error, setError] = useState('')
     const [promptError, setPromptError] = useState(false)
     const [imageError, setImageError] = useState(false)
+    
+    const [previousResetSignal, setPreviousResetSignal] = useState(resetSignal)
 
-    useEffect(() => {
-        if (resetSignal === 0) return
-
+    if (resetSignal !== previousResetSignal) {
+        setPreviousResetSignal(resetSignal)
         setForm({ ...initialForm })
         setImage(null)
         setError('')
         setPromptError(false)
         setImageError(false)
-    }, [resetSignal])
+    }
 
     const update = (key, value) => {
         setForm(current => ({ ...current, [key]: value }))
-    }
-
-    const resetForm = () => {
-        setForm({ ...initialForm })
-        setImage(null)
-        setError('')
-        setPromptError(false)
-        setImageError(false)
-        onResetPreview?.()
     }
 
     const handleSubmit = event => {
