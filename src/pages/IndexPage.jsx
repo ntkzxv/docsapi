@@ -1,4 +1,4 @@
-import Icon from '../components/Icon'
+import BotnoiAuthButton from '../components/BotnoiAuthButton'
 
 export default function IndexPage({ endpointGroups, expandedGroups, setExpandedGroups, activeEndpoint, selectEndpoint, sidebarOpen, setSidebarOpen, theme, setTheme, children }) {
   return <>
@@ -11,7 +11,7 @@ export default function IndexPage({ endpointGroups, expandedGroups, setExpandedG
       </section>)}</nav>
     </aside>
     <div className="catalog-main">
-      <header className="catalog-topbar"><button className="sidebar-menu-button catalog-menu-button" aria-label="Open endpoint menu" onClick={() => setSidebarOpen(true)}><span/><span/><span/></button><span>API Endpoints</span><div className="topbar-actions"><button className="theme-toggle" type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} onClick={() => setTheme(current => current === 'dark' ? 'light' : 'dark')}><Icon name={theme === 'dark' ? 'sun' : 'moon'} width="17" height="17"/><span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button><a className="sign-in-link" href="https://voice.botnoi.ai" target="_blank" rel="noopener noreferrer" aria-label="Sign in to your account"><span className="sign-in-link-label">Sign in to your account</span><span aria-hidden="true">→</span></a></div></header>
+      <header className="catalog-topbar"><button className="sidebar-menu-button catalog-menu-button" aria-label="Open endpoint menu" onClick={() => setSidebarOpen(true)}><span/><span/><span/></button><span>API Endpoints</span><div className="topbar-actions"><BotnoiAuthButton theme={theme} onToggleTheme={() => setTheme(current => current === 'dark' ? 'light' : 'dark')} /></div></header>
       {children}
     </div>
   </>
