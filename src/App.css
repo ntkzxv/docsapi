@@ -85,6 +85,8 @@ button{cursor:pointer}button:disabled{cursor:wait;opacity:.55}button,input,texta
 .endpoint-status-note{margin-top:10px;color:var(--muted);font-size:12px}
 .endpoint-status-note code{color:var(--text);font:11px Consolas,monospace}
 .endpoint-docs{text-align:left}
+.api-docs-footer{width:min(calc(100% - 40px),1000px);margin:18px auto 0;padding:20px 8px 24px;border-top:1px solid var(--line);color:var(--muted);text-align:center;font-size:12px;line-height:1.7}
+.api-docs-footer a{color:inherit;text-decoration:underline;text-underline-offset:3px}.api-docs-footer a:hover{color:var(--text)}
 .endpoint-try-group{margin:22px 0 4px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px;border:1px solid #303030;border-radius:7px;background:#151515}
 .endpoint-try-group h2{margin:0;color:#e4e8ef;font-size:14px;font-weight:600;letter-spacing:0;text-transform:none}
 .endpoint-try-group p{margin-top:5px;color:var(--muted);font-size:12px;line-height:1.6}

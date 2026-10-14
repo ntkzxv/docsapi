@@ -1,4 +1,5 @@
 import Icon from '../components/Icon'
+import ApiDocsFooter from '../components/ApiDocsFooter'
 
 export default function TryItPage({ activeEndpoint, theme, onBack, onToggleTheme, children }) {
   return <div className="try-main">
@@ -12,5 +13,6 @@ export default function TryItPage({ activeEndpoint, theme, onBack, onToggleTheme
       </div>
     </header>
     {children}
+    <ApiDocsFooter />
   </div>
 }

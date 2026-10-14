@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import Icon from './components/Icon'
+import ApiDocsFooter from './components/ApiDocsFooter'
 import IndexPage from './pages/IndexPage'
 import TryItPage from './pages/TryItPage'
 import { Choice, InfiniteTalkForm, MotionControlForm, OmniHumanForm, SeeDreamForm, Seedance20Form, WaveSpeedModelForm } from './features/try-it/TryItForms'
@@ -267,6 +268,7 @@ function App() {
   }
 }`}</pre><p className="endpoint-status-note">Status: <code>pending</code> | <code>processing</code> | <code>completed</code> | <code>failed</code></p></section>
       </article> : endpointDocs[activeEndpoint.name] ? <EndpointDocsPage doc={{ title: activeEndpoint.name, ...endpointDocs[activeEndpoint.name] }} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={openTryIt}/> : wavespeedModels[activeEndpoint.name]?.available === false ? <article className="endpoint-docs"><h1>{wavespeedModels[activeEndpoint.name].title}</h1><p className="endpoint-unavailable-note">{wavespeedModels[activeEndpoint.name].description}</p><p className="endpoint-docs-description">สามารถตรวจสอบรายการโมเดลปัจจุบันได้ที่ <a href="https://wavespeed.ai/models" target="_blank" rel="noopener noreferrer">WaveSpeedAI Models ↗</a></p></article> : wavespeedModels[activeEndpoint.name] ? <EndpointDocsPage doc={wavespeedModels[activeEndpoint.name]} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={openTryIt}/> : activeEndpoint.method === 'POST' && <button className="endpoint-launch-button" onClick={openTryIt}>Try it <Icon name="arrow" width="17" height="17"/></button>}
+      <ApiDocsFooter />
     </main>
   </IndexPage>}
   </div>
