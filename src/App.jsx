@@ -82,13 +82,14 @@ function App() {
     try {
       const botnoiEndpoint = activeEndpoint.botnoiId ? botnoiEndpoints[activeEndpoint.botnoiId] : null
       const botnoiView = botnoiEndpoint ? adaptBotnoiEndpoint(botnoiEndpoint) : null
-      const rawExample = botnoiView?.examples.find(example => example.status === 200)?.value
+      const primaryExample = botnoiView?.examples.find(example => example.status >= 200 && example.status < 300)
+      const rawExample = primaryExample?.value
       let example = {}
       if (rawExample) {
         try { example = JSON.parse(rawExample) } catch { example = rawExample }
       }
       const markdown = botnoiEndpoint
-        ? endpointMarkdown({ title: botnoiEndpoint.title, method: botnoiEndpoint.method, path: botnoiEndpoint.path, description: botnoiEndpoint.description, parameters: botnoiView.parameters, body: botnoiView.body, responses: botnoiView.responses, example })
+        ? endpointMarkdown({ title: botnoiEndpoint.title, method: botnoiEndpoint.method, path: botnoiEndpoint.path, description: botnoiEndpoint.description, parameters: botnoiView.parameters, body: botnoiView.body, responses: botnoiView.responses, example, exampleStatus: primaryExample?.status })
         : endpointDocs[activeEndpoint.name]
         ? endpointMarkdown({ title: activeEndpoint.name, ...endpointDocs[activeEndpoint.name] })
         : wavespeedModels[activeEndpoint.name]

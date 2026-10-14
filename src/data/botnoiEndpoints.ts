@@ -30,6 +30,8 @@ export const sidebarGroups: SidebarGroup[] = [
       { id: 'infinitetalk-status', label: 'Get InfiniteTalk result',    method: 'GET'  },
       { id: 'omnihuman-submit',    label: 'Create OmniHuman avatar',    method: 'POST' },
       { id: 'omnihuman-status',    label: 'Get OmniHuman result',       method: 'GET'  },
+      { id: 'dreamactor-submit',   label: 'Create DreamActor',           method: 'POST' },
+      { id: 'dreamactor-status',   label: 'Get DreamActor result',       method: 'GET'  },
     ],
   },
   {
@@ -330,6 +332,60 @@ export const endpoints: Record<string, Endpoint> = {
             resp_data: JSON.stringify({ video_url: 'https://storage.botnoi.ai/.../avatar.mp4' }),
           },
         }, null, 2),
+      },
+      { status: 404, description: 'Task not found', contentType: 'application/json', shape: 'ErrorResponse' },
+    ],
+  },
+
+  'dreamactor-submit': {
+    id: 'dreamactor-submit',
+    title: 'Create DreamActor',
+    method: 'POST',
+    path: '/api/genai/byteplus/dreamactor',
+    description: 'BytePlus DreamActor — ดิจิทัลฮิวแมนระดับสูง ขยับปากและแสดงสีหน้าซิงค์เสียง เหมาะสำหรับ Digital Human Presenter',
+    auth: true,
+    parameters: [],
+    requestBody: {
+      required: true,
+      contentType: 'multipart/form-data',
+      shape: 'DreamActorRequest',
+      fields: [
+        { name: 'image_file', type: 'File', required: true, description: 'ไฟล์รูปภาพ Presenter' },
+        { name: 'audio_file', type: 'File', required: true, description: 'ไฟล์เสียงพากย์ (MP3, WAV)' },
+        { name: 'prompt', type: 'string', required: false, description: 'Prompt อธิบายสไตล์เพิ่มเติม' },
+      ],
+    },
+    responses: [
+      {
+        status: 202,
+        description: 'Task accepted',
+        contentType: 'application/json',
+        shape: 'TaskResponse',
+        example: JSON.stringify({ data: { id: 'task_dreamactor_123', status: 'pending' } }, null, 2),
+      },
+      { status: 401, description: 'Unauthorized', contentType: 'application/json', shape: 'ErrorResponse' },
+      { status: 403, description: 'Insufficient credits', contentType: 'application/json', shape: 'ErrorResponse' },
+    ],
+  },
+
+  'dreamactor-status': {
+    id: 'dreamactor-status',
+    title: 'Get DreamActor result',
+    method: 'GET',
+    path: '/api/genai/byteplus/dreamactor/{id}',
+    description: 'ตรวจสอบสถานะ DreamActor task',
+    auth: true,
+    parameters: [
+      { name: 'id', in: 'path', type: 'string', required: true, description: 'Task ID จาก POST DreamActor' },
+    ],
+    requestBody: null,
+    responses: [
+      {
+        status: 200,
+        description: 'Successful Response',
+        contentType: 'application/json',
+        shape: 'ByteplusStatusResponse',
+        example: JSON.stringify({ data: { status: 'completed', url_video: 'https://storage.botnoi.ai/.../dreamactor.mp4' } }, null, 2),
       },
       { status: 404, description: 'Task not found', contentType: 'application/json', shape: 'ErrorResponse' },
     ],

@@ -276,7 +276,7 @@ export const endpointMarkdown = doc => {
   lines.push('', '## Request Body', '')
   if (!doc.body) lines.push('No request body.')
   else lines.push(`| **Required** | **Content-Type** | **Shape** |`, '| :--- | :--- | :--- |', `| Yes | ${doc.body.contentType} | ${doc.body.shape} |`, '', '| **Name** | **Type** | **Required** | **Description** |', '| :--- | :--- | :--- | :--- |', ...doc.body.fields.map(row => `| ${row.map(markdownCell).join(' | ')} |`))
-  lines.push('', '## Responses', '', '| **Status** | **Description** | **Content-Type** | **Shape** |', '| :--- | :--- | :--- | :--- |', ...doc.responses.map(([status, description, shape]) => `| **${status}** | ${description} | application/json | ${shape} |`), '', '**Example Response (200)**', '', '```json', JSON.stringify(doc.example, null, 2), '```')
+  lines.push('', '## Responses', '', '| **Status** | **Description** | **Content-Type** | **Shape** |', '| :--- | :--- | :--- | :--- |', ...doc.responses.map(([status, description, shape]) => `| **${status}** | ${description} | application/json | ${shape} |`), '', `**Example Response (${doc.exampleStatus ?? 200})**`, '', '```json', JSON.stringify(doc.example, null, 2), '```')
   if (doc.statusNote) lines.push('', `Status: ${doc.statusNote}`)
   if (doc.resultPath) lines.push('', '## Get result', '', `**GET** \`${doc.resultPath}\``, '', 'Poll with the prediction ID from `data.id`. Completed results are in `data.outputs`.')
   return lines.join('\n')

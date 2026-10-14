@@ -1,0 +1,778 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Botnoi AI Gateway API",
+    "description": "ระบบ API กลางของ Botnoi สำหรับสร้างวิดีโอ อวาตาร์พูด รูปภาพ และ GPT Image ด้วย AI",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Botnoi Group",
+      "url": "https://botnoi.ai"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api-voice.botnoi.ai",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "tags": [
+    { "name": "Video Generation",   "description": "สร้างวิดีโอด้วย SeeDance 2.0 / 2.5" },
+    { "name": "Avatar Video",       "description": "อวาตาร์พูดซิงค์เสียง (OmniHuman, InfiniteTalk, Motion Control, DreamActor)" },
+    { "name": "Image Generation",   "description": "สร้างรูปภาพด้วย SeeDream 4.5" },
+    { "name": "GPT Image Studio",   "description": "Text to Image, Image Edit และ Check Status ด้วย GPT Image Model" }
+  ],
+  "paths": {
+
+    "/api/genai/wavespeed/bytedance/seedance-2.5/text-to-video": {
+      "post": {
+        "tags": ["Video Generation"],
+        "summary": "Create Seedance 2.5 video",
+        "description": "โมเดลสร้างวิดีโอคุณภาพสูง (Flagship) รองรับ Text-to-Video, Image-to-Video (First & Last frame) และ Reference Media",
+        "operationId": "createSeedance25Video",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt", "duration", "resolution"],
+                "properties": {
+                  "prompt":           { "type": "string",  "description": "ข้อความอธิบายวิดีโอที่ต้องการ" },
+                  "duration":         { "type": "number",  "description": "ความยาว เช่น 5 หรือ 10 วินาที", "example": 5 },
+                  "resolution":       { "type": "string",  "description": "ความละเอียด", "enum": ["720p", "1080p"] },
+                  "aspect_ratio":     { "type": "string",  "description": "อัตราส่วนภาพ", "enum": ["16:9", "9:16"] },
+                  "generate_audio":   { "type": "boolean", "description": "สร้างเสียงประกอบวิดีโอ" },
+                  "reference_images": { "type": "array",   "items": { "type": "string" }, "description": "Array ของรูปภาพแบบ Base64 Data URL" },
+                  "reference_videos": { "type": "array",   "items": { "type": "string" }, "description": "Array ของวิดีโออ้างอิงแบบ Base64 Data URL" }
+                }
+              },
+              "example": {
+                "prompt": "a cinematic sunset over the ocean",
+                "duration": 5,
+                "resolution": "1080p",
+                "aspect_ratio": "16:9",
+                "generate_audio": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task submitted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskResponse" },
+                "example": { "data": { "id": "task_seedance25_abc123", "status": "pending" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/InsufficientCredits" }
+        }
+      }
+    },
+
+    "/api/genai/wavespeed/result/{id}": {
+      "get": {
+        "tags": ["Video Generation"],
+        "summary": "Get Seedance 2.5 / GPT Image result",
+        "description": "ตรวจสอบสถานะและดึง url_video — ใช้ path เดียวกับ InfiniteTalk, Motion Control และ GPT Image",
+        "operationId": "getWavespeedResult",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Task ID ที่ได้จาก POST (field: data.id)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WavespeedResultResponse" },
+                "examples": {
+                  "processing": {
+                    "summary": "ระหว่างประมวลผล",
+                    "value": { "data": { "id": "task_abc123", "status": "processing" } }
+                  },
+                  "completed": {
+                    "summary": "เสร็จสมบูรณ์",
+                    "value": { "data": { "id": "task_abc123", "status": "completed", "url_video": "https://storage.botnoi.ai/.../output.mp4" } }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/api/genai/byteplus/video-generation": {
+      "post": {
+        "tags": ["Video Generation"],
+        "summary": "Create SeeDance 2.0 / Mini video",
+        "description": "BytePlus Engine — Text-to-Video หรือ Image-to-Video ด้วย dreamina-seedance-2-0 หรือ mini model",
+        "operationId": "createSeedance20Video",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt", "mode", "duration", "ratio", "resolution"],
+                "properties": {
+                  "prompt":     { "type": "string", "description": "ข้อความ Prompt" },
+                  "mode":       { "type": "string", "description": "โหมดสร้างวิดีโอ", "enum": ["text-to-video", "image-to-video"] },
+                  "model":      { "type": "string", "description": "โมเดล", "enum": ["dreamina-seedance-2-0-260128", "dreamina-seedance-2-0-mini-260615"] },
+                  "image_file": { "type": "string", "format": "binary", "description": "ไฟล์รูปภาพตั้งต้น (Image-to-Video)" },
+                  "duration":   { "type": "string", "description": "ความยาว", "enum": ["5", "10"] },
+                  "ratio":      { "type": "string", "description": "อัตราส่วนภาพ", "enum": ["16:9", "9:16"] },
+                  "resolution": { "type": "string", "description": "ความละเอียด", "enum": ["720p", "1080p"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task submitted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskResponse" },
+                "example": { "data": { "task_id": "task_seedance20_xyz789" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/InsufficientCredits" }
+        }
+      }
+    },
+
+    "/api/genai/byteplus/video-generation/{task_id}": {
+      "get": {
+        "tags": ["Video Generation"],
+        "summary": "Get SeeDance 2.0 result",
+        "description": "ตรวจสอบสถานะ task และดึง url_video ของ SeeDance 2.0 / Mini",
+        "operationId": "getSeedance20Result",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "description": "Task ID ที่ได้จาก POST (field: data.task_id)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ByteplusStatusResponse" },
+                "example": { "data": { "status": "completed", "url_video": "https://storage.botnoi.ai/.../video.mp4" } }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/api/genai/byteplus/avatar-video": {
+      "post": {
+        "tags": ["Avatar Video"],
+        "summary": "Create OmniHuman avatar",
+        "description": "BytePlus Avatar — วิดีโออวาตาร์ขยับปากและแสดงสีหน้าซิงค์เสียง ด้วย OmniHuman engine",
+        "operationId": "createOmniHumanAvatar",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["image_file", "audio_file"],
+                "properties": {
+                  "image_file": { "type": "string", "format": "binary", "description": "ไฟล์ภาพ Avatar" },
+                  "audio_file": { "type": "string", "format": "binary", "description": "ไฟล์เสียงพูด" },
+                  "prompt":     { "type": "string",  "description": "Prompt อธิบายสไตล์" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task submitted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskResponse" },
+                "example": { "data": { "task_id": "task_omnihuman_888" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/InsufficientCredits" }
+        }
+      }
+    },
+
+    "/api/genai/byteplus/avatar-video/{id}": {
+      "get": {
+        "tags": ["Avatar Video"],
+        "summary": "Get OmniHuman result",
+        "description": "ตรวจสอบสถานะ OmniHuman task",
+        "operationId": "getOmniHumanResult",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Task ID ที่ได้จาก POST (field: data.task_id)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ByteplusStatusResponse" },
+                "example": { "data": { "status": "done", "resp_data": "{\"video_url\":\"https://storage.botnoi.ai/.../avatar.mp4\"}" } }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/api/genai/infinitetalk": {
+      "post": {
+        "tags": ["Avatar Video"],
+        "summary": "Create InfiniteTalk avatar",
+        "description": "สร้างวิดีโอตัวละครขยับปากและศีรษะสัมพันธ์กับเสียงพูดอย่างเป็นธรรมชาติ (Fast Avatar)",
+        "operationId": "createInfiniteTalkAvatar",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["image_file", "audio_file", "resolution"],
+                "properties": {
+                  "image_file": { "type": "string", "format": "binary", "description": "ไฟล์รูปภาพใบหน้า Avatar (JPG / PNG)" },
+                  "audio_file": { "type": "string", "format": "binary", "description": "ไฟล์เสียงพูด (MP3 / WAV)" },
+                  "resolution": { "type": "string", "description": "ความละเอียด", "enum": ["480p", "720p"] },
+                  "prompt":     { "type": "string",  "description": "ข้อความ Prompt กำหนดลักษณะเพิ่มเติม" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task submitted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskResponse" },
+                "example": { "data": { "id": "task_infinitetalk_555", "status": "pending" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/InsufficientCredits" }
+        }
+      }
+    },
+
+    "/api/genai/get_id_wavspeed": {
+      "get": {
+        "tags": ["Avatar Video"],
+        "summary": "Get InfiniteTalk / Motion Control result",
+        "description": "ตรวจสอบสถานะ InfiniteTalk หรือ Motion Control task (Wavespeed engine) — ใช้ query param ?id={id}",
+        "operationId": "getWavspeedResult",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Task ID ที่ได้จาก POST",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WavespeedResultResponse" },
+                "examples": {
+                  "processing": {
+                    "summary": "ระหว่างประมวลผล",
+                    "value": { "data": { "id": "task_555", "status": "pending" } }
+                  },
+                  "success": {
+                    "summary": "เสร็จสมบูรณ์",
+                    "value": { "data": { "id": "task_555", "status": "success", "url_video": "https://storage.botnoi.ai/.../avatar.mp4" } }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/api/genai/motion-control": {
+      "post": {
+        "tags": ["Avatar Video"],
+        "summary": "Create Motion Control video",
+        "description": "Kling Motion Control — สร้างวิดีโอตัวละครขยับตามท่าทางจาก Template video (Wavespeed engine)",
+        "operationId": "createMotionControlVideo",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["image", "video", "mode", "character_orientation"],
+                "properties": {
+                  "image":                 { "type": "string", "format": "binary", "description": "ภาพตัวละครต้นฉบับ" },
+                  "video":                 { "type": "string", "format": "binary", "description": "คลิปท่าทางหรือ URL Template" },
+                  "mode":                  { "type": "string", "description": "โหมด", "enum": ["standard", "pro"] },
+                  "character_orientation": { "type": "string", "description": "ทิศทางตัวละคร", "enum": ["image", "video"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task submitted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskResponse" },
+                "example": { "data": { "id": "task_motion_999" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/InsufficientCredits" }
+        }
+      }
+    },
+
+    "/api/genai/byteplus/dreamactor": {
+      "post": {
+        "tags": ["Avatar Video"],
+        "summary": "Create DreamActor",
+        "description": "BytePlus DreamActor — ดิจิทัลฮิวแมนระดับสูง ขยับปาก/แสดงสีหน้าซิงค์เสียง เหมาะสำหรับ Digital Human Presenter",
+        "operationId": "createDreamActor",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["image_file", "audio_file"],
+                "properties": {
+                  "image_file": { "type": "string", "format": "binary", "description": "ไฟล์รูปภาพ presenter" },
+                  "audio_file": { "type": "string", "format": "binary", "description": "ไฟล์เสียงพากย์ (MP3, WAV)" },
+                  "prompt":     { "type": "string",  "description": "Prompt อธิบายสไตล์เพิ่มเติม" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Task accepted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/InsufficientCredits" }
+        }
+      }
+    },
+
+    "/api/genai/byteplus/dreamactor/{id}": {
+      "get": {
+        "tags": ["Avatar Video"],
+        "summary": "Get DreamActor result",
+        "description": "ตรวจสอบสถานะ DreamActor task",
+        "operationId": "getDreamActorResult",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Task ID จาก POST DreamActor",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ByteplusStatusResponse" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/api/genai/byteplus/image-generation": {
+      "post": {
+        "tags": ["Image Generation"],
+        "summary": "Create SeeDream 4.5 image",
+        "description": "BytePlus Image Model — สร้างรูปภาพคุณภาพสูงด้วย Seedream 4.5 รองรับ Text-to-Image และ Image-to-Image",
+        "operationId": "createSeeDreamImage",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt", "parameters"],
+                "properties": {
+                  "prompt":     { "type": "string", "description": "ข้อความสร้างรูปภาพ" },
+                  "model":      { "type": "string", "description": "โมเดล", "example": "seedream-4-5-251128" },
+                  "parameters": { "type": "string", "description": "JSON string: {\"size\":\"1024x1024\",\"sequential_image_generation\":\"disabled\",\"watermark\":false}" },
+                  "image1":     { "type": "string", "format": "binary", "description": "รูปภาพตั้งต้น (Image-to-Image)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task submitted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskResponse" },
+                "example": { "data": { "task_id": "task_seedream_001" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/InsufficientCredits" }
+        }
+      }
+    },
+
+    "/api/genai/byteplus/image-generation/status/{task_id}": {
+      "get": {
+        "tags": ["Image Generation"],
+        "summary": "Get SeeDream 4.5 result",
+        "description": "ตรวจสอบสถานะและดึง URL รูปภาพที่สร้างเสร็จแล้ว",
+        "operationId": "getSeeDreamResult",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "description": "Task ID ที่ได้จาก POST (field: data.task_id)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ByteplusStatusResponse" },
+                "example": { "data": { "status": "success", "url_video": "https://storage.botnoi.ai/.../image.png" } }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+
+    "/api/genai/wavespeed/gpt-image/text-to-image": {
+      "post": {
+        "tags": ["GPT Image Studio"],
+        "summary": "Create GPT Image (Text to Image)",
+        "description": "ส่งคำสั่ง Prompt สำหรับสร้างรูปภาพใหม่ด้วยโมเดล GPT Image — ได้รับ task_id สำหรับนำไป polling",
+        "operationId": "createGptImageTextToImage",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt":               { "type": "string",  "description": "ข้อความอธิบายรูปภาพที่ต้องการสร้าง" },
+                  "resolution":           { "type": "string",  "description": "ความละเอียด", "enum": ["1k", "2k"] },
+                  "quality":              { "type": "string",  "description": "คุณภาพ", "enum": ["low", "medium", "high"] },
+                  "aspect_ratio":         { "type": "string",  "description": "อัตราส่วนภาพ", "enum": ["1:1", "16:9", "9:16", "4:3"] },
+                  "output_format":        { "type": "string",  "description": "รูปแบบไฟล์ผลลัพธ์", "enum": ["png", "jpeg", "webp"] },
+                  "enable_sync_mode":     { "type": "boolean", "description": "Sync mode (default: false)", "default": false },
+                  "enable_base64_output": { "type": "boolean", "description": "Base64 output (default: false)", "default": false }
+                }
+              },
+              "example": {
+                "prompt": "a cute cat in astronaut suit, cinematic lighting",
+                "resolution": "1k",
+                "quality": "low",
+                "aspect_ratio": "1:1",
+                "output_format": "png",
+                "enable_sync_mode": false,
+                "enable_base64_output": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task submitted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GptImageTaskResponse" },
+                "example": { "code": 200, "message": "success", "data": { "id": "pred_20261008xxxxxxxxx", "status": "queued" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/InsufficientCredits" }
+        }
+      }
+    },
+
+    "/api/genai/upload_image": {
+      "post": {
+        "tags": ["GPT Image Studio"],
+        "summary": "Upload image for editing",
+        "description": "อัปโหลดไฟล์รูปภาพขึ้น Amazon S3 เพื่อรับ img_url นำไปใช้ใน Image Edit endpoint",
+        "operationId": "uploadImage",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "format": "binary", "description": "ไฟล์รูปภาพ (.png, .jpg, .webp)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "upload successfully" },
+                    "img_url": { "type": "string", "example": "https://botnoiaudio.s3.amazonaws.com/default/production/user_xxx/image_xxx.png" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+
+    "/api/genai/wavespeed/gpt-image/edit": {
+      "post": {
+        "tags": ["GPT Image Studio"],
+        "summary": "Edit image with prompt",
+        "description": "ส่งคำสั่ง Prompt พร้อม URL รูปภาพต้นฉบับ (จาก upload_image) เพื่อให้ AI ทำการแก้ไขหรือตกแต่งภาพ",
+        "operationId": "editGptImage",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt", "images"],
+                "properties": {
+                  "prompt":               { "type": "string",  "description": "คำสั่งแก้ไขภาพ" },
+                  "images":               { "type": "array",   "items": { "type": "string" }, "description": "Array ของ URL รูปภาพต้นฉบับ (ได้จาก upload_image)" },
+                  "output_format":        { "type": "string",  "description": "รูปแบบไฟล์ผลลัพธ์", "enum": ["png", "jpeg", "webp"] },
+                  "enable_sync_mode":     { "type": "boolean", "default": false },
+                  "enable_base64_output": { "type": "boolean", "default": false }
+                }
+              },
+              "example": {
+                "prompt": "change background to snowy mountain",
+                "images": ["https://botnoiaudio.s3.amazonaws.com/default/production/user_xxx/image_xxx.png"],
+                "output_format": "png",
+                "enable_sync_mode": false,
+                "enable_base64_output": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task submitted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GptImageTaskResponse" },
+                "example": { "code": 200, "message": "success", "data": { "id": "pred_20261008xxxxxxxxx", "status": "queued" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/InsufficientCredits" }
+        }
+      }
+    }
+  },
+
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "ใส่ Botnoi token: Authorization: Bearer <_bn_token>"
+      }
+    },
+    "schemas": {
+      "TaskResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "id":      { "type": "string", "description": "Task ID" },
+              "task_id": { "type": "string", "description": "Task ID (บาง endpoint ใช้ field นี้)" },
+              "status":  { "type": "string", "example": "pending" }
+            }
+          }
+        }
+      },
+      "WavespeedResultResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "id":        { "type": "string" },
+              "status":    { "type": "string", "enum": ["pending", "processing", "completed", "success", "failed"] },
+              "url_video": { "type": "string", "description": "URL วิดีโอ/รูปภาพผลลัพธ์ (เมื่อ status = completed/success)" },
+              "error":     { "type": "string" }
+            }
+          }
+        }
+      },
+      "ByteplusStatusResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "status":    { "type": "string", "enum": ["processing", "completed", "done", "success", "failed"] },
+              "url_video": { "type": "string", "description": "URL ผลลัพธ์" },
+              "resp_data": { "type": "string", "description": "JSON string ผลลัพธ์ (บาง endpoint)" }
+            }
+          }
+        }
+      },
+      "GptImageTaskResponse": {
+        "type": "object",
+        "properties": {
+          "code":    { "type": "integer", "example": 200 },
+          "message": { "type": "string",  "example": "success" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id":     { "type": "string", "description": "Task ID สำหรับ polling" },
+              "status": { "type": "string", "example": "queued" }
+            }
+          }
+        }
+      },
+      "GptImageStatusResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "task_id":   { "type": "string" },
+              "progress":  { "type": "integer", "minimum": 0, "maximum": 100 },
+              "status":    { "type": "string", "enum": ["processing", "completed", "failed"] },
+              "video_url": { "type": "string", "description": "URL รูปภาพผลลัพธ์ (เมื่อ status = completed)" }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "error":   { "type": "string" }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Unauthorized — token ไม่ถูกต้องหรือหมดอายุ",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "InsufficientCredits": {
+        "description": "Forbidden — credits ไม่เพียงพอ",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Task not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    }
+  }
+}
