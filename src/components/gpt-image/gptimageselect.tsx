@@ -1,27 +1,30 @@
 
 import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
+
+type SelectOption = [value: string, label: ReactNode]
 
 export default function GPTImageSelect({
   label,
   value,
   options,
   onChange,
-}) {
+}: { label: string; value: string; options: SelectOption[]; onChange: (value: string) => void }) {
   const [open, setOpen] = useState(false)
-  const root = useRef(null)
+  const root = useRef<HTMLDivElement>(null)
 
   const current = options.find(([key]) => key === value)
 
   useEffect(() => {
     if (!open) return
 
-    const closeOutside = event => {
-      if (!root.current?.contains(event.target)) {
+    const closeOutside = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) {
         setOpen(false)
       }
     }
 
-    const closeEscape = event => {
+    const closeEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false)
       }

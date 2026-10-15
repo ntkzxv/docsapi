@@ -1,4 +1,6 @@
-export const wavespeedModels = {
+import type { EndpointDoc, EndpointGroup, InitialVideoForm, ModelFormField } from '../types/app'
+
+export const wavespeedModels: Record<string, EndpointDoc & { path: string; formFields: ModelFormField[] }> = {
   'Kling 3.0 Std': {
     title: 'Kling 3.0 Std Text-to-Video', method: 'POST', path: '/api/v3/kwaivgi/kling-v3.0-std/text-to-video', hideAttribution: true,
     description: 'Kling 3.0 Standard สร้างวิดีโอจากข้อความ รองรับเสียงประกอบ อัตราส่วนภาพ และ storyboard หลายช็อต',
@@ -39,8 +41,8 @@ for (const model of Object.values(wavespeedModels)) {
   model.statusNote = 'created | processing | completed | failed | cancelled | timeout | deleted'
 }
 
-export const initialForm = { prompt: '', duration: '5', resolution: '720p', aspect_ratio: '', generate_audio: false }
-export const endpointGroups = [
+export const initialForm: InitialVideoForm = { prompt: '', duration: '5', resolution: '720p', aspect_ratio: '', generate_audio: false }
+export const endpointGroups: EndpointGroup[] = [
   { name: 'Video AI Models', items: [
     { method: 'POST', name: 'Create Seedance 2.5 video', path: '/api/genai/wavespeed/bytedance/seedance-2.5/text-to-video' },
     { method: 'GET', name: 'Get Seedance 2.5 result' },
@@ -166,7 +168,7 @@ export const seedance25ResultMarkdown = [
   '',
   'Status values: "pending" | "processing" | "completed" | "failed"',
 ].join('\n')
-export const endpointDocs = {
+export const endpointDocs: Record<string, Omit<EndpointDoc, 'title'>> = {
   'Create SeeDance 2.0 / Mini video': {
     method: 'POST', path: '/api/genai/byteplus/video-generation',
     description: 'BytePlus Engine — Text-to-Video หรือ Image-to-Video ด้วย dreamina-seedance-2-0 หรือ mini model',
@@ -268,15 +270,15 @@ export const endpointDocs = {
     example: { data: { status: 'success', url_video: 'https://storage.botnoi.ai/.../image.png' } },
   },
 }
-export const markdownCell = value => String(value).replaceAll('|', '\\|')
-export const endpointMarkdown = doc => {
+export const markdownCell = (value: unknown): string => String(value).replaceAll('|', '\\|')
+export const endpointMarkdown = (doc: EndpointDoc & { exampleStatus?: number }) => {
   const lines = [`# ${doc.title}`, '', `**${doc.method}** \`${doc.path}\``, '', ...(doc.description ? [doc.description, ''] : []), ...(doc.scopeNote && !doc.hideAttribution ? [doc.scopeNote, ''] : []), ...(doc.sourceUrl && !doc.hideAttribution ? ['Base URL: `https://api.wavespeed.ai`', '', `Source: ${doc.sourceUrl}`, ''] : []), '## Auth', '', ...(doc.sourceUrl ? ['WaveSpeedAI API key: `Authorization: Bearer <WAVESPEED_API_KEY>`', ''] : ['**Authentication required.**', '']), '## Parameters', '']
   if (doc.parameters) lines.push('| **Name** | **In** | **Required** | **Type** | **Description** |', '| :--- | :--- | :--- | :--- | :--- |', ...doc.parameters.map(row => `| ${row.map(markdownCell).join(' | ')} |`))
   else lines.push('No parameters.')
   lines.push('', '## Request Body', '')
   if (!doc.body) lines.push('No request body.')
-  else lines.push(`| **Required** | **Content-Type** | **Shape** |`, '| :--- | :--- | :--- |', `| Yes | ${doc.body.contentType} | ${doc.body.shape} |`, '', '| **Name** | **Type** | **Required** | **Description** |', '| :--- | :--- | :--- | :--- |', ...doc.body.fields.map(row => `| ${row.map(markdownCell).join(' | ')} |`))
-  lines.push('', '## Responses', '', '| **Status** | **Description** | **Content-Type** | **Shape** |', '| :--- | :--- | :--- | :--- |', ...doc.responses.map(([status, description, shape]) => `| **${status}** | ${description} | application/json | ${shape} |`), '', `**Example Response (${doc.exampleStatus ?? 200})**`, '', '```json', JSON.stringify(doc.example, null, 2), '```')
+  else lines.push(`| **Required** | **Content-Type** | **Shape** |`, '| :--- | :--- | :--- |', `| Yes | ${doc.body.contentType} | ${doc.body.shape} |`, '', '| **Name** | **Type** | **Required** | **Description** |', '| :--- | :--- | :--- | :--- |', ...(doc.body.fields ?? []).map(row => `| ${row.map(markdownCell).join(' | ')} |`))
+  lines.push('', '## Responses', '', '| **Status** | **Description** | **Content-Type** | **Shape** |', '| :--- | :--- | :--- | :--- |', ...(doc.responses ?? []).map(([status, description, shape]) => `| **${status}** | ${description} | application/json | ${shape} |`), '', `**Example Response (${doc.exampleStatus ?? 200})**`, '', '```json', JSON.stringify(doc.example, null, 2), '```')
   if (doc.statusNote) lines.push('', `Status: ${doc.statusNote}`)
   if (doc.resultPath) lines.push('', '## Get result', '', `**GET** \`${doc.resultPath}\``, '', 'Poll with the prediction ID from `data.id`. Completed results are in `data.outputs`.')
   return lines.join('\n')

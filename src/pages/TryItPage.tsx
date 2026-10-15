@@ -1,8 +1,18 @@
 import Icon from '../components/Icon'
 import ApiDocsFooter from '../components/ApiDocsFooter'
 import BotnoiAuthButton from '../components/BotnoiAuthButton'
+import type { ReactNode } from 'react'
+import type { EndpointItem } from '../types/app'
 
-export default function TryItPage({ activeEndpoint, theme, onBack, onToggleTheme, children }) {
+interface TryItPageProps {
+  activeEndpoint: EndpointItem
+  theme: 'dark' | 'light'
+  onBack: () => void
+  onToggleTheme: () => void
+  children: ReactNode
+}
+
+export default function TryItPage({ activeEndpoint, theme, onBack, onToggleTheme, children }: TryItPageProps) {
   return <div className="try-main">
     <header className="topbar">
       <button className="back-button" onClick={onBack}><Icon name="back"/>Back</button>

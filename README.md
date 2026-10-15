@@ -2,6 +2,8 @@
 
 ต้นแบบหน้า Try it แบบแยกหน้า รองรับการเปิดฟอร์มโดยตรงจากปุ่มบนหน้าเอกสารผ่าน endpoint slug ใน URL hash ไม่มีการส่ง request ไป API จริง
 
+Source code ใช้ TypeScript เป็นหลัก: React components อยู่ในไฟล์ `.tsx` และ data/config อยู่ในไฟล์ `.ts` โดยเปิด strict type checking ทั้งฝั่งแอปและ Vite config
+
 ## เปิดใช้งานในเครื่อง
 
 ```bash

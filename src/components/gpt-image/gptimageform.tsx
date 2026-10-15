@@ -1,6 +1,9 @@
 
 import { useState } from 'react'
+import type { FormEvent } from 'react'
 import GPTImageSelect from './gptimageselect'
+import { useNotification } from '../NotificationProvider'
+import type { RequestPreview } from '../../types/app'
 
 const initialForm = {
     prompt: '',
@@ -10,10 +13,17 @@ const initialForm = {
     output_format: 'png',
 }
 
-export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }) {
+interface GPTImageFormProps {
+    onPreview: (data: RequestPreview) => void
+    onResetPreview?: () => void
+    resetSignal: number
+}
+
+export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }: GPTImageFormProps) {
+    const notify = useNotification()
     const [mode, setMode] = useState('text-to-image')
     const [form, setForm] = useState(initialForm)
-    const [image, setImage] = useState(null)
+    const [image, setImage] = useState<File | null>(null)
     const [error, setError] = useState('')
     const [promptError, setPromptError] = useState(false)
     const [imageError, setImageError] = useState(false)
@@ -29,11 +39,11 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal })
         setImageError(false)
     }
 
-    const update = (key, value) => {
+    const update = (key: keyof typeof initialForm, value: string) => {
         setForm(current => ({ ...current, [key]: value }))
     }
 
-    const handleSubmit = event => {
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
 
@@ -45,6 +55,7 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal })
 
         if (isPromptInvalid || isImageInvalid) {
             setError('')
+            notify('failure', isPromptInvalid ? 'กรุณากรอก Prompt ก่อนกด Preview Request' : 'กรุณาเลือกรูปภาพที่ต้องการแก้ไข')
             return
         }
 
@@ -70,8 +81,8 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal })
                 upload_required: true,
                 upload_endpoint: '/api/genai/upload_image',
                 selected_file: {
-                    file_name: image.name,
-                    content_type: image.type,
+                    file_name: image!.name,
+                    content_type: image!.type,
                 },
                 body: {
                     prompt: form.prompt.trim(),
@@ -177,7 +188,7 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal })
                                 ? 'อธิบายรูปภาพที่ต้องการสร้าง...'
                                 : 'อธิบายสิ่งที่ต้องการแก้ไขในรูปภาพ...'
                         }
-                        rows="4"
+                        rows={4}
                     />
 
 

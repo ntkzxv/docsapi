@@ -1,6 +1,7 @@
 import { endpoints, sidebarGroups } from './botnoiEndpoints'
+import type { EndpointGroup } from '../types/app'
 
-export const botnoiEndpointGroups = sidebarGroups.map(group => ({
+export const botnoiEndpointGroups: EndpointGroup[] = sidebarGroups.map(group => ({
   name: group.label,
   items: group.items.map(item => {
     const endpoint = endpoints[item.id]
