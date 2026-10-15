@@ -1,6 +1,6 @@
 # Botnoi API Try it prototype
 
-ต้นแบบหน้า Try it แบบแยกหน้า รองรับการเปิดฟอร์มโดยตรงจากปุ่มบนหน้าเอกสารผ่าน endpoint slug ใน URL hash ไม่มีการส่ง request ไป API จริง
+หน้า Try it แบบแยกหน้า รองรับการเปิดฟอร์มโดยตรงจากปุ่มบนหน้าเอกสารผ่าน endpoint slug ใน URL hash ฟอร์ม **Create Seedance 2.5 video** เชื่อม Botnoi GenAI แล้ว โดยใช้ token จากการเข้าสู่ระบบ Botnoi ส่งงานและตรวจสถานะจนได้วิดีโอ ส่วนฟอร์มอื่นยังเป็นต้นแบบและไม่ส่ง request ไป API จริง
 
 Source code ใช้ TypeScript เป็นหลัก: React components อยู่ในไฟล์ `.tsx` และ data/config อยู่ในไฟล์ `.ts` โดยเปิด strict type checking ทั้งฝั่งแอปและ Vite config
 

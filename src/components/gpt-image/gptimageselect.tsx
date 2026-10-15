@@ -1,6 +1,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useLanguage } from '../../functions/LanguageProvider'
 
 type SelectOption = [value: string, label: ReactNode]
 
@@ -10,6 +11,7 @@ export default function GPTImageSelect({
   options,
   onChange,
 }: { label: string; value: string; options: SelectOption[]; onChange: (value: string) => void }) {
+  const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
 
@@ -41,7 +43,7 @@ export default function GPTImageSelect({
 
   return (
     <div className="choice-field" ref={root}>
-      <span className="choice-label">{label}</span>
+      <span className="choice-label">{t(label)}</span>
 
       <button
         type="button"
@@ -50,7 +52,7 @@ export default function GPTImageSelect({
         aria-expanded={open}
         onClick={() => setOpen(!open)}
       >
-        <span>{current?.[1] ?? 'Select an option'}</span>
+        <span>{current?.[1] ?? t('Select an option')}</span>
         <span className="select-chevron" aria-hidden="true" />
       </button>
 
@@ -58,7 +60,7 @@ export default function GPTImageSelect({
         <div
           className="custom-select-menu"
           role="listbox"
-          aria-label={label}
+          aria-label={t(label)}
         >
           {options.map(([key, text]) => (
             <button
@@ -72,7 +74,7 @@ export default function GPTImageSelect({
                 setOpen(false)
               }}
             >
-              {text}
+              {typeof text === 'string' ? t(text) : text}
 
               {value === key && (
                 <span className="option-check" aria-hidden="true">

@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import GPTImageSelect from './gptimageselect'
 import { useNotification } from '../NotificationProvider'
 import type { RequestPreview } from '../../types/app'
+import { useLanguage } from '../../functions/LanguageProvider'
 
 const initialForm = {
     prompt: '',
@@ -21,6 +22,7 @@ interface GPTImageFormProps {
 
 export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }: GPTImageFormProps) {
     const notify = useNotification()
+    const { t } = useLanguage()
     const [mode, setMode] = useState('text-to-image')
     const [form, setForm] = useState(initialForm)
     const [image, setImage] = useState<File | null>(null)
@@ -55,7 +57,7 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
 
         if (isPromptInvalid || isImageInvalid) {
             setError('')
-            notify('failure', isPromptInvalid ? 'กรุณากรอก Prompt ก่อนกด Preview Request' : 'กรุณาเลือกรูปภาพที่ต้องการแก้ไข')
+            notify('failure', t(isPromptInvalid ? 'กรุณากรอก Prompt ก่อนกด Preview Request' : 'กรุณาเลือกรูปภาพที่ต้องการแก้ไข'))
             return
         }
 
@@ -122,7 +124,7 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
             {mode === 'image-edit' && (
                 <div className="seedream-image-field">
                     <label className="prompt-label" htmlFor="gpt-image-upload">
-                        Starting image <span className="required">*</span>
+                        {t('Starting image')} <span className="required">*</span>
                     </label>
 
                     <label
@@ -131,12 +133,12 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
                     >
                         <span className="avatar-upload-icon">↑</span>
                         <strong>
-                            {image ? image.name : 'เลือกภาพต้นฉบับ'}
+                            {image ? image.name : t('เลือกภาพต้นฉบับ')}
                         </strong>
                         <span>
                             {image
                                 ? `${(image.size / (1024 * 1024)).toFixed(2)} MB`
-                                : 'PNG, JPG หรือ WEBP'}
+                                : t('PNG, JPG หรือ WEBP')}
                         </span>
 
                         <input
@@ -155,7 +157,7 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
                     </label>
                     {imageError && (
                         <p className="gpt-image-error-message" role="alert">
-                            กรุณาเลือกรูปภาพที่ต้องการแก้ไข
+                            {t('กรุณาเลือกรูปภาพที่ต้องการแก้ไข')}
                         </p>
                     )}
                 </div>
@@ -164,7 +166,7 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
             {/* Prompt */}
             <div>
                 <label className="prompt-label" htmlFor="gpt-image-prompt">
-                    Prompt <span className="required">*</span>
+                    {t('Prompt')} <span className="required">*</span>
                 </label>
 
                 <div className={`prompt-input ${promptError ? 'gpt-prompt-error' : ''}`}>
@@ -185,8 +187,8 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
                         }
                         placeholder={
                             mode === 'text-to-image'
-                                ? 'อธิบายรูปภาพที่ต้องการสร้าง...'
-                                : 'อธิบายสิ่งที่ต้องการแก้ไขในรูปภาพ...'
+                                ? t('อธิบายรูปภาพที่ต้องการสร้าง...')
+                                : t('อธิบายสิ่งที่ต้องการแก้ไขในรูปภาพ...')
                         }
                         rows={4}
                     />
@@ -194,9 +196,9 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
 
                     <div className="prompt-footer">
                         <span>
-                            อธิบายรายละเอียดเพื่อให้ได้ภาพตามที่ต้องการ
+                            {t('อธิบายรายละเอียดเพื่อให้ได้ภาพตามที่ต้องการ')}
                         </span>
-                        <span>{form.prompt.length} characters</span>
+                        <span>{form.prompt.length} {t('characters')}</span>
                     </div>
                 </div>
             </div>
@@ -207,7 +209,7 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
                     className="gpt-prompt-error-message"
                     role="alert"
                 >
-                    กรุณากรอก Prompt ก่อนกด Preview Request
+                    {t('กรุณากรอก Prompt ก่อนกด Preview Request')}
                 </p>
             )}
             {/* Settings เฉพาะ Text to Image */}
@@ -266,14 +268,14 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
             {/* Error Message */}
             {error && (
                 <p className="error" role="alert">
-                    {error}
+                    {t(error)}
                 </p>
             )}
 
             {/* Preview Request */}
             <div className="form-action">
                 <button className="primary-button" type="submit">
-                    Preview Request
+                    {t('Preview Request')}
                 </button>
             </div>
 

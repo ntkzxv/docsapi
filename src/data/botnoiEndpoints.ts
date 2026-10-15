@@ -1,5 +1,7 @@
 import type { BotnoiEndpoint as Endpoint, BotnoiResponseRow as ResponseRow } from '../types/botnoiEndpoint'
 
+export const BOTNOI_API_BASE_URL = 'https://api-voice.botnoi.ai'
+
 export interface SidebarItem {
   id: string;
   label: string;

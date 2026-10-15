@@ -207,7 +207,7 @@ export const endpointDocs: Record<string, Omit<EndpointDoc, 'title'>> = {
   'Get Motion Control result': {
     method: 'GET', path: '/api/genai/get_id_wavspeed',
     description: 'ตรวจสอบสถานะ Motion Control task — ใช้ query param ?id={id} (Wavespeed engine เดียวกับ InfiniteTalk)',
-    parameters: [['id', 'path', 'Yes', 'string', 'Task ID ที่ได้จาก POST (field: data.id)']],
+    parameters: [['id', 'query', 'Yes', 'string', 'Task ID ที่ได้จาก POST (field: data.id)']],
     responses: [['200', 'Successful Response', 'WavespeedResultResponse'], ['404', 'Task not found', 'ErrorResponse']],
     example: { data: { id: 'task_motion_999', status: 'success', url_video: 'https://storage.botnoi.ai/.../motion.mp4' } },
     statusNote: 'pending | success | failed',
@@ -227,7 +227,7 @@ export const endpointDocs: Record<string, Omit<EndpointDoc, 'title'>> = {
   'Get InfiniteTalk result': {
     method: 'GET', path: '/api/genai/get_id_wavspeed',
     description: 'ตรวจสอบสถานะ InfiniteTalk task — ใช้ query param ?id={id} (Wavespeed engine)',
-    parameters: [['id', 'path', 'Yes', 'string', 'Task ID ที่ได้จาก POST (field: data.id หรือ data.task_id)']],
+    parameters: [['id', 'query', 'Yes', 'string', 'Task ID ที่ได้จาก POST (field: data.id หรือ data.task_id)']],
     responses: [['200', 'Successful Response', 'WavespeedResultResponse'], ['404', 'Task not found', 'ErrorResponse']],
     example: { data: { id: 'task_infinitetalk_555', status: 'success', url_video: 'https://storage.botnoi.ai/.../avatar.mp4' } },
     statusNote: 'pending | success | failed',
