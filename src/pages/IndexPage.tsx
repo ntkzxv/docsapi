@@ -43,20 +43,13 @@ export default function IndexPage({ endpointGroups, expandedGroups, setExpandedG
     return () => document.removeEventListener('pointerdown', onPointerDown)
   }, [])
 
-  const chooseModel = (item: ModelSearchItem) => {
-    setExpandedGroups(current => ({ ...current, [item.groupName]: true }))
-    selectEndpoint(item)
-    setQuery('')
-    setSearchOpen(false)
-  }
-
   return <>
     {sidebarOpen && <button className="sidebar-scrim" aria-label={t('Close endpoint menu')} onClick={() => setSidebarOpen(false)}/>}
     <aside className={`endpoint-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
       <a className="sidebar-brand" href="#/"><img src={botnoiLogo} alt="BOTNOI"/><span className="sidebar-brand-copy"><span>API Integration v1.0</span><strong>Botnoi AI Gateway</strong></span></a>
       <nav aria-label={t('API endpoint navigation')}>{endpointGroups.map(group => <section className="sidebar-group" key={group.name}>
         <button className="sidebar-group-title" aria-expanded={expandedGroups[group.name]} onClick={() => setExpandedGroups(current => ({ ...current, [group.name]: !current[group.name] }))}><span>{t(group.name)}</span><span className={`group-chevron ${expandedGroups[group.name] ? '' : 'collapsed'}`}>⌄</span></button>
-        {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} className={`endpoint-tab ${activeEndpoint.name === item.name ? 'active' : ''}`} onClick={() => selectEndpoint(item)}><span className={`sidebar-method ${item.kind === 'model' ? 'model' : item.method.toLowerCase()}`}>{item.kind === 'model' ? 'WAIT' : item.method}</span><span className="sidebar-endpoint-name">{t(item.name)}</span></button>)}</div>}
+        {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} className={`endpoint-tab ${activeEndpoint.name === item.name ? 'active' : ''}`} disabled={item.kind === 'model'} onClick={() => { if (item.kind !== 'model') selectEndpoint(item) }}><span className={`sidebar-method ${item.kind === 'model' ? 'model' : item.method.toLowerCase()}`}>{item.kind === 'model' ? 'WAIT' : item.method}</span><span className="sidebar-endpoint-name">{t(item.name)}</span></button>)}</div>}
       </section>)}</nav>
     </aside>
     <div className="catalog-main">
@@ -70,13 +63,14 @@ export default function IndexPage({ endpointGroups, expandedGroups, setExpandedG
               if (!searchOpen || !query.trim() || !modelResults.length) return
               if (event.key === 'ArrowDown') { event.preventDefault(); setActiveSearchIndex(index => Math.min(index + 1, modelResults.length - 1)) }
               if (event.key === 'ArrowUp') { event.preventDefault(); setActiveSearchIndex(index => Math.max(index - 1, 0)) }
-              if (event.key === 'Enter') { event.preventDefault(); chooseModel(modelResults[activeSearchIndex] ?? modelResults[0]) }
+              if (event.key === 'Enter') event.preventDefault()
             }} />
             {query && <button type="button" className="model-search-clear" aria-label={t('Clear search')} onClick={() => { setQuery(''); setSearchOpen(false) }}>×</button>}
           </div>
           {searchOpen && query.trim() && <div className="model-search-results" id="model-search-results" role="listbox" aria-label={t('Model search results')}>
-            {modelResults.length ? modelResults.map((item, index) => <button type="button" id={`model-search-option-${index}`} className={`model-search-result ${activeSearchIndex === index ? 'is-highlighted' : ''}`} role="option" aria-selected={activeSearchIndex === index} key={`${item.groupName}-${item.name}`} onMouseEnter={() => setActiveSearchIndex(index)} onClick={() => chooseModel(item)}>
+            {modelResults.length ? modelResults.map((item, index) => <button type="button" id={`model-search-option-${index}`} className={`model-search-result ${activeSearchIndex === index ? 'is-highlighted' : ''}`} role="option" aria-selected={activeSearchIndex === index} key={`${item.groupName}-${item.name}`} disabled>
               <span className="model-search-result-copy"><strong>{t(item.name)}</strong><small>{t(item.groupName)}</small></span>
+              <span className="sidebar-method model">WAIT</span>
               {item.path && <code>{item.path}</code>}
             </button>) : <p className="model-search-empty">{t('No models found')}</p>}
           </div>}
