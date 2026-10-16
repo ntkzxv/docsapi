@@ -20,7 +20,7 @@
   ],
   "tags": [
     { "name": "Video Generation",   "description": "สร้างวิดีโอด้วย SeeDance 2.0 / 2.5" },
-    { "name": "Avatar Video",       "description": "อวาตาร์พูดซิงค์เสียง (OmniHuman, InfiniteTalk, Motion Control, DreamActor)" },
+    { "name": "Avatar Video",       "description": "อวาตาร์พูดซิงค์เสียง (OmniHuman, InfiniteTalk, Motion Control)" },
     { "name": "Image Generation",   "description": "สร้างรูปภาพด้วย SeeDream 4.5" },
     { "name": "GPT Image Studio",   "description": "Text to Image, Image Edit และ Check Status ด้วย GPT Image Model" }
   ],
@@ -119,8 +119,8 @@
     "/api/genai/byteplus/video-generation": {
       "post": {
         "tags": ["Video Generation"],
-        "summary": "Create SeeDance 2.0 / Mini video",
-        "description": "BytePlus Engine — Text-to-Video หรือ Image-to-Video ด้วย dreamina-seedance-2-0 หรือ mini model",
+        "summary": "Create SeeDance 2.0 video",
+        "description": "BytePlus Engine — Text-to-Video หรือ Image-to-Video ด้วยโมเดล dreamina-seedance-2-0-260128",
         "operationId": "createSeedance20Video",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
@@ -133,7 +133,7 @@
                 "properties": {
                   "prompt":     { "type": "string", "description": "ข้อความ Prompt" },
                   "mode":       { "type": "string", "description": "โหมดสร้างวิดีโอ", "enum": ["text-to-video", "image-to-video"] },
-                  "model":      { "type": "string", "description": "โมเดล", "enum": ["dreamina-seedance-2-0-260128", "dreamina-seedance-2-0-mini-260615"] },
+                  "model":      { "type": "string", "description": "โมเดล", "enum": ["dreamina-seedance-2-0-260128"] },
                   "image_file": { "type": "string", "format": "binary", "description": "ไฟล์รูปภาพตั้งต้น (Image-to-Video)" },
                   "duration":   { "type": "string", "description": "ความยาว", "enum": ["5", "10"] },
                   "ratio":      { "type": "string", "description": "อัตราส่วนภาพ", "enum": ["16:9", "9:16"] },
@@ -163,7 +163,7 @@
       "get": {
         "tags": ["Video Generation"],
         "summary": "Get SeeDance 2.0 result",
-        "description": "ตรวจสอบสถานะ task และดึง url_video ของ SeeDance 2.0 / Mini",
+        "description": "ตรวจสอบสถานะ task และดึง url_video ของ SeeDance 2.0",
         "operationId": "getSeedance20Result",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -380,74 +380,6 @@
       }
     },
 
-    "/api/genai/byteplus/dreamactor": {
-      "post": {
-        "tags": ["Avatar Video"],
-        "summary": "Create DreamActor",
-        "description": "BytePlus DreamActor — ดิจิทัลฮิวแมนระดับสูง ขยับปาก/แสดงสีหน้าซิงค์เสียง เหมาะสำหรับ Digital Human Presenter",
-        "operationId": "createDreamActor",
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "required": ["image_file", "audio_file"],
-                "properties": {
-                  "image_file": { "type": "string", "format": "binary", "description": "ไฟล์รูปภาพ presenter" },
-                  "audio_file": { "type": "string", "format": "binary", "description": "ไฟล์เสียงพากย์ (MP3, WAV)" },
-                  "prompt":     { "type": "string",  "description": "Prompt อธิบายสไตล์เพิ่มเติม" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Task accepted",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/TaskResponse" }
-              }
-            }
-          },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/InsufficientCredits" }
-        }
-      }
-    },
-
-    "/api/genai/byteplus/dreamactor/{id}": {
-      "get": {
-        "tags": ["Avatar Video"],
-        "summary": "Get DreamActor result",
-        "description": "ตรวจสอบสถานะ DreamActor task",
-        "operationId": "getDreamActorResult",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "description": "Task ID จาก POST DreamActor",
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ByteplusStatusResponse" }
-              }
-            }
-          },
-          "404": { "$ref": "#/components/responses/NotFound" }
-        }
-      }
-    },
-
     "/api/genai/byteplus/image-generation": {
       "post": {
         "tags": ["Image Generation"],
@@ -461,11 +393,12 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": ["prompt", "parameters"],
+                "required": ["prompt", "resolution", "parameters"],
                 "properties": {
                   "prompt":     { "type": "string", "description": "ข้อความสร้างรูปภาพ" },
                   "model":      { "type": "string", "description": "โมเดล", "example": "seedream-4-5-251128" },
-                  "parameters": { "type": "string", "description": "JSON string: {\"size\":\"1024x1024\",\"sequential_image_generation\":\"disabled\",\"watermark\":false}" },
+                  "resolution": { "type": "string", "description": "ความละเอียด", "enum": ["480p", "720p"] },
+                  "parameters": { "type": "string", "description": "JSON string: {\"sequential_image_generation\":\"disabled\",\"watermark\":false}" },
                   "image1":     { "type": "string", "format": "binary", "description": "รูปภาพตั้งต้น (Image-to-Image)" }
                 }
               }
@@ -532,7 +465,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["prompt"],
+                "required": ["prompt", "resolution"],
                 "properties": {
                   "prompt":               { "type": "string",  "description": "ข้อความอธิบายรูปภาพที่ต้องการสร้าง" },
                   "resolution":           { "type": "string",  "description": "ความละเอียด", "enum": ["1k", "2k"] },

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import Icon from './components/Icon'
+import ProviderLogo, { type ApiProvider } from './components/ProviderLogo'
 import ApiDocsFooter from './components/ApiDocsFooter'
 import IndexPage from './pages/IndexPage'
 import TryItPage from './pages/TryItPage'
-import { Choice, DreamActorForm, InfiniteTalkForm, MotionControlForm, OmniHumanForm, SeeDreamForm, Seedance20Form, WaveSpeedModelForm } from './features/try-it/TryItForms'
+import { Choice, InfiniteTalkForm, MotionControlForm, OmniHumanForm, SeeDreamForm, Seedance20Form, WaveSpeedModelForm } from './features/try-it/TryItForms'
 import GPTImagePage from './pages/gptimagepage'
 import BotnoiEndpointPage from './pages/BotnoiEndpointPage'
 import BotnoiRequestForm from './features/try-it/BotnoiRequestForm'
@@ -26,20 +27,19 @@ import type { VideoGeneration, Seedance25Request } from './services/seedance25'
 const endpointGroups: EndpointGroup[] = [...botnoiEndpointGroups, ...catalogGroups.filter(group => group.name === 'Feature Model')]
 const integratedEndpoints = endpointGroups.flatMap(group => group.items)
 const botnoiSchemaFormIds = new Set(['gptimg-text2img', 'gptimg-upload', 'gptimg-edit'])
-const botnoiCustomFormIds = new Set(['seedance25-submit', 'seedance20-submit', 'motion-control-submit', 'infinitetalk-submit', 'omnihuman-submit', 'dreamactor-submit', 'seedream-submit'])
+const botnoiCustomFormIds = new Set(['seedance25-submit', 'seedance20-submit', 'motion-control-submit', 'infinitetalk-submit', 'omnihuman-submit', 'seedream-submit'])
 const botnoiGenerationPairs: Record<string, { statusEndpointId: string; mediaKind: 'image' | 'video' }> = {
   'seedance25-submit': { statusEndpointId: 'seedance25-status', mediaKind: 'video' },
   'seedance20-submit': { statusEndpointId: 'seedance20-status', mediaKind: 'video' },
   'motion-control-submit': { statusEndpointId: 'motion-control-status', mediaKind: 'video' },
   'infinitetalk-submit': { statusEndpointId: 'infinitetalk-status', mediaKind: 'video' },
   'omnihuman-submit': { statusEndpointId: 'omnihuman-status', mediaKind: 'video' },
-  'dreamactor-submit': { statusEndpointId: 'dreamactor-status', mediaKind: 'video' },
   'seedream-submit': { statusEndpointId: 'seedream-status', mediaKind: 'image' },
   'gptimg-text2img': { statusEndpointId: 'gptimg-status', mediaKind: 'image' },
   'gptimg-edit': { statusEndpointId: 'gptimg-status', mediaKind: 'image' },
 }
 type GenerationState = Omit<VideoGeneration, 'status'> & { status: 'idle' | VideoGeneration['status'] }
-const supportsTryIt = (item: EndpointItem | undefined) => item?.kind === 'model' || (item?.kind === 'botnoi' && Boolean(item.botnoiId) && (botnoiSchemaFormIds.has(item.botnoiId!) || botnoiCustomFormIds.has(item.botnoiId!))) || ['Create GPT Image', 'Create Seedance 2.5 video', 'Create SeeDance 2.0 / Mini video', 'Create Motion Control video', 'Create InfiniteTalk avatar', 'Create OmniHuman avatar', 'Create SeeDream 4.5 image'].includes(item?.name ?? '')
+const supportsTryIt = (item: EndpointItem | undefined) => item?.kind === 'model' || (item?.kind === 'botnoi' && Boolean(item.botnoiId) && (botnoiSchemaFormIds.has(item.botnoiId!) || botnoiCustomFormIds.has(item.botnoiId!))) || ['Create GPT Image', 'Create Seedance 2.5 video', 'Create SeeDance 2.0 video', 'Create Motion Control video', 'Create InfiniteTalk avatar', 'Create OmniHuman avatar', 'Create SeeDream 4.5 image'].includes(item?.name ?? '')
 
 function TryItCallout({ onTry, live = true }: { onTry: () => void; live?: boolean }) {
   const { t } = useLanguage()
@@ -152,7 +152,6 @@ function AppContent() {
   const [avatarResetKey, setAvatarResetKey] = useState(0)
   const [seedreamResetKey, setSeedreamResetKey] = useState(0)
   const [seedance20ResetKey, setSeedance20ResetKey] = useState(0)
-  const [dreamActorResetKey, setDreamActorResetKey] = useState(0)
   const [motionResetKey, setMotionResetKey] = useState(0)
   const [omniResetKey, setOmniResetKey] = useState(0)
   const [modelResetKey, setModelResetKey] = useState(0)
@@ -231,7 +230,7 @@ function AppContent() {
     void generateSeedance20(request, controller.signal, next => {
       if (!controller.signal.aborted) setGeneration(next)
     }).then(result => {
-      if (generationAbortRef.current === controller && result.status === 'completed') notify('success', 'สร้างวิดีโอ SeeDance 2.0 / Mini สำเร็จ')
+      if (generationAbortRef.current === controller && result.status === 'completed') notify('success', 'สร้างวิดีโอ SeeDance 2.0 สำเร็จ')
     }).catch(failure => {
       if (controller.signal.aborted || (failure instanceof DOMException && failure.name === 'AbortError')) return
       const message = failure instanceof Error ? failure.message : 'สร้างวิดีโอไม่สำเร็จ กรุณาลองอีกครั้ง'
@@ -340,6 +339,13 @@ function AppContent() {
     : activeEndpoint.botnoiId ? botnoiGenerationPairs[activeEndpoint.botnoiId]?.mediaKind : undefined
   const isMediaGeneration = Boolean(mediaKind)
   const isImageUpload = activeEndpoint.botnoiId === 'gptimg-upload'
+  const activeProvider: ApiProvider | null = activeEndpoint.kind === 'model'
+    || ['Create GPT Image', 'Create Seedance 2.5 video', 'Create InfiniteTalk avatar', 'Create Motion Control video'].includes(activeEndpoint.name)
+    ? 'wavespeed'
+    : activeEndpoint.name === 'Create SeeDance 2.0 video' || activeEndpoint.name === 'Create SeeDream 4.5 image' || activeEndpoint.name === 'Create OmniHuman avatar'
+      ? 'byteplus'
+      : null
+  const providerHeadingIcon = activeProvider ? <ProviderLogo provider={activeProvider}/> : <span className="model-icon"><Icon name="video"/></span>
   const outputUrl = generation.mediaUrl ?? generation.videoUrl ?? generation.imageUrl
   const resultType = mediaKind === 'image' || /image|img/i.test(activeEndpoint.name)
     ? 'IMAGE'
@@ -358,33 +364,30 @@ function AppContent() {
   return <div className={`app-shell ${theme === 'light' ? 'light-mode' : ''}`}>
     {isTryPage ? <TryItPage activeEndpoint={activeEndpoint} theme={theme} onToggleTheme={toggleTheme} onBack={goBack}>
     <main className="workspace" onClickCapture={requireSignInForPost} onSubmitCapture={requireSignInForPost} onInvalidCapture={handleNativeInvalid}>
-      <section className="input-panel" aria-label={t(activeEndpoint.botnoiId && botnoiSchemaFormIds.has(activeEndpoint.botnoiId) ? 'Request settings' : activeEndpoint.name === 'Create InfiniteTalk avatar' || activeEndpoint.name === 'Create OmniHuman avatar' || activeEndpoint.name === 'Create DreamActor' ? 'Avatar settings' : activeEndpoint.name === 'Create SeeDream 4.5 image' || ['GPT Image 2.5', 'DALL-E 3'].includes(activeEndpoint.name) ? 'Image settings' : activeEndpoint.name === 'Create Motion Control video' ? 'Motion Control settings' : 'Video settings')}>
+      <section className="input-panel" aria-label={t(activeEndpoint.botnoiId && botnoiSchemaFormIds.has(activeEndpoint.botnoiId) ? 'Request settings' : activeEndpoint.name === 'Create InfiniteTalk avatar' || activeEndpoint.name === 'Create OmniHuman avatar' ? 'Avatar settings' : activeEndpoint.name === 'Create SeeDream 4.5 image' || ['GPT Image 2.5', 'DALL-E 3'].includes(activeEndpoint.name) ? 'Image settings' : activeEndpoint.name === 'Create Motion Control video' ? 'Motion Control settings' : 'Video settings')}>
         {activeEndpoint.botnoiId && botnoiSchemaFormIds.has(activeEndpoint.botnoiId) ? <BotnoiRequestForm key={activeEndpoint.botnoiId} endpoint={botnoiEndpoints[activeEndpoint.botnoiId]} onPreview={handleBotnoiRequest} generationStatus={generation.status}/> : activeEndpoint.name === 'Create GPT Image' ? <>
-        <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon">✦</span><div><h2>{t('GPT Image settings')}</h2><p>{t('สร้างและแก้ไขรูปภาพด้วย GPT Image')}</p></div></div><button type="button" className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { setPreview(null); setGptImageResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
+        <div className="panel-heading"><div className="heading-with-icon">{providerHeadingIcon}<div><h2>{t('GPT Image settings')}</h2><p>{t('สร้างและแก้ไขรูปภาพด้วย GPT Image')}</p></div></div><button type="button" className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { setPreview(null); setGptImageResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
         <GPTImagePage resetSignal={gptImageResetKey} onPreview={handlePreview} onResetPreview={() => setPreview(null)}/>
         </> : activeEndpoint.kind === 'model' ? <>
-        <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon"><Icon name="video"/></span><div><h2>{t(['GPT Image 2.5', 'DALL-E 3'].includes(activeEndpoint.name) ? 'Image settings' : 'Video settings')}</h2><p>{t(wavespeedModels[activeEndpoint.name].title)}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { setPreview(null); setModelResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
+        <div className="panel-heading"><div className="heading-with-icon">{providerHeadingIcon}<div><h2>{t(['GPT Image 2.5', 'DALL-E 3'].includes(activeEndpoint.name) ? 'Image settings' : 'Video settings')}</h2><p>{t(wavespeedModels[activeEndpoint.name].title)}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { setPreview(null); setModelResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
         <WaveSpeedModelForm key={`${activeEndpoint.name}-${modelResetKey}`} doc={wavespeedModels[activeEndpoint.name]} onPreview={handlePreview}/>
         </> : activeEndpoint.name === 'Create InfiniteTalk avatar' ? <>
-        <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon"><Icon name="video"/></span><div><h2>{t('Avatar settings')}</h2><p>{t('อัปโหลดภาพใบหน้าและเสียงพูด')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setAvatarResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
+        <div className="panel-heading"><div className="heading-with-icon">{providerHeadingIcon}<div><h2>{t('Avatar settings')}</h2><p>{t('อัปโหลดภาพใบหน้าและเสียงพูด')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setAvatarResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
         <InfiniteTalkForm key={avatarResetKey} onGenerate={payload => generateBotnoiEndpoint('infinitetalk-submit', payload)} generationStatus={generation.status}/>
         </> : activeEndpoint.name === 'Create SeeDream 4.5 image' ? <>
-        <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon"><Icon name="video"/></span><div><h2>{t('Image settings')}</h2><p>{t('กำหนดรายละเอียดภาพที่ต้องการสร้าง')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setSeedreamResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
+        <div className="panel-heading"><div className="heading-with-icon">{providerHeadingIcon}<div><h2>{t('Image settings')}</h2><p>{t('กำหนดรายละเอียดภาพที่ต้องการสร้าง')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setSeedreamResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
         <SeeDreamForm key={seedreamResetKey} onGenerate={payload => generateBotnoiEndpoint('seedream-submit', payload)} generationStatus={generation.status}/>
-        </> : activeEndpoint.name === 'Create SeeDance 2.0 / Mini video' ? <>
-        <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon"><Icon name="video"/></span><div><h2>{t('Video settings')}</h2><p>{t('ตั้งค่า Text-to-Video หรือ Image-to-Video')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setSeedance20ResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
+        </> : activeEndpoint.name === 'Create SeeDance 2.0 video' ? <>
+        <div className="panel-heading"><div className="heading-with-icon">{providerHeadingIcon}<div><h2>{t('Video settings')}</h2><p>{t('ตั้งค่า Text-to-Video หรือ Image-to-Video')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setSeedance20ResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
         <Seedance20Form key={seedance20ResetKey} onGenerate={generateSeedance20Video} generationStatus={generation.status}/>
         </> : activeEndpoint.name === 'Create Motion Control video' ? <>
-        <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon"><Icon name="video"/></span><div><h2>{t('Motion Control settings')}</h2><p>{t('จับคู่ภาพตัวละครกับคลิปท่าทาง')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setMotionResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
+        <div className="panel-heading"><div className="heading-with-icon">{providerHeadingIcon}<div><h2>{t('Motion Control settings')}</h2><p>{t('จับคู่ภาพตัวละครกับคลิปท่าทาง')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setMotionResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
         <MotionControlForm key={motionResetKey} onGenerate={payload => generateBotnoiEndpoint('motion-control-submit', payload)} generationStatus={generation.status}/>
         </> : activeEndpoint.name === 'Create OmniHuman avatar' ? <>
-        <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon"><Icon name="video"/></span><div><h2>{t('OmniHuman settings')}</h2><p>{t('สร้าง Avatar ที่ซิงค์ภาพกับเสียงพูด')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setOmniResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
+        <div className="panel-heading"><div className="heading-with-icon">{providerHeadingIcon}<div><h2>{t('OmniHuman settings')}</h2><p>{t('สร้าง Avatar ที่ซิงค์ภาพกับเสียงพูด')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setOmniResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
         <OmniHumanForm key={omniResetKey} onGenerate={payload => generateBotnoiEndpoint('omnihuman-submit', payload)} generationStatus={generation.status}/>
-        </> : activeEndpoint.name === 'Create DreamActor' ? <>
-        <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon"><Icon name="video"/></span><div><h2>{t('DreamActor settings')}</h2><p>{t('อัปโหลดภาพ Presenter และเสียงพากย์')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={() => { resetGeneration(); setPreview(null); setDreamActorResetKey(key => key + 1) }}><Icon name="reset"/></button></div>
-        <DreamActorForm key={dreamActorResetKey} onGenerate={payload => generateBotnoiEndpoint('dreamactor-submit', payload)} generationStatus={generation.status}/>
         </> : <>
-        <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon"><Icon name="video"/></span><div><h2>{t('Video settings')}</h2><p>{t('กำหนดรายละเอียดวิดีโอของคุณ')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={reset} disabled={reading}><Icon name="reset"/></button></div>
+        <div className="panel-heading"><div className="heading-with-icon">{providerHeadingIcon}<div><h2>{t('Video settings')}</h2><p>{t('กำหนดรายละเอียดวิดีโอของคุณ')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={reset} disabled={reading}><Icon name="reset"/></button></div>
         <form onSubmit={submit} noValidate={activeEndpoint.method === 'POST'}>
           <label className="prompt-label" htmlFor="prompt">{t('Prompt')} <span className="required">*</span></label>
           <div className="prompt-input"><textarea id="prompt" required={activeEndpoint.method !== 'POST'} value={form.prompt} onChange={e => update('prompt', e.target.value)} placeholder={t('อธิบายฉาก การเคลื่อนไหว แสง และบรรยากาศของวิดีโอที่คุณต้องการ…')}/><div className="prompt-footer"><span>{t('รายละเอียดที่ชัดเจนช่วยให้ได้ผลลัพธ์ที่ตรงใจ')}</span><span>{form.prompt.length} {t('characters')}</span></div></div>
@@ -409,7 +412,7 @@ function AppContent() {
             {isMediaGeneration && generation.status === 'completed' && outputUrl && <div className="result-actions"><a className="download-video-button" href={outputUrl} download={mediaKind === 'image' ? 'botnoi-generated-image.png' : 'botnoi-generated-video.mp4'} target="_blank" rel="noopener noreferrer">{t(mediaKind === 'image' ? 'Download image' : 'Download video')}</a><button className="download-video-button" type="button" onClick={() => void copyResultUrl()}>{t('Copy result URL')}</button></div>}
             <div className="result-message">
               {isMediaGeneration ? <>
-                <h3>{t(generation.status === 'completed' ? isImageUpload ? 'อัปโหลดภาพสำเร็จ' : mediaKind === 'image' ? 'สร้างภาพสำเร็จ' : 'สร้างวิดีโอสำเร็จ' : generation.status === 'submitting' ? isImageUpload ? 'กำลังอัปโหลดภาพ' : 'กำลังส่งคำขอ' : generation.status === 'processing' ? mediaKind === 'image' ? 'กำลังสร้างภาพ' : 'กำลังสร้างวิดีโอ' : generation.status === 'failed' ? isImageUpload ? 'อัปโหลดภาพไม่สำเร็จ' : 'สร้างไม่สำเร็จ' : 'ผลลัพธ์จากการสร้างวิดีโอและภาพจะแสดงที่นี่')}</h3>
+                <h3>{t(generation.status === 'completed' ? isImageUpload ? 'อัปโหลดภาพสำเร็จ' : mediaKind === 'image' ? 'สร้างภาพสำเร็จ' : 'สร้างวิดีโอสำเร็จ' : generation.status === 'submitting' ? isImageUpload ? 'กำลังอัปโหลดภาพ' : 'กำลังส่งคำขอ' : generation.status === 'processing' ? mediaKind === 'image' ? 'กำลังสร้างภาพ' : 'กำลังสร้างวิดีโอ' : generation.status === 'failed' ? isImageUpload ? 'อัปโหลดภาพไม่สำเร็จ' : 'สร้างไม่สำเร็จ' : 'ผลลัพธ์จากการสร้างวิดีโอและภาพจะแสดงที่นี่')}{isGenerating && <span className="generation-spinner" aria-hidden="true" />}</h3>
                 <p>{t(generation.status === 'completed' ? isImageUpload ? 'ภาพถูกอัปโหลดและพร้อมใช้งานแล้ว' : mediaKind === 'image' ? 'ภาพพร้อมแสดงแล้ว' : 'วิดีโอพร้อมแสดงแล้ว' : generation.status === 'submitting' ? isImageUpload ? 'กำลังส่งภาพไปยัง Botnoi' : 'กำลังส่งข้อมูลไปยัง Botnoi GenAI' : generation.status === 'processing' ? 'ระบบกำลังประมวลผล' : generation.status === 'failed' ? generation.error ?? 'Generation failed' : `กรอกรายละเอียดทางซ้าย แล้วกด ${mediaKind === 'image' ? 'Generate image' : 'Generate video'}`)}{generation.status === 'processing' && generation.taskId ? ` · Task ID: ${generation.taskId}` : ''}</p>
               </> : <>
                 <h3>{t(preview ? 'เตรียมคำขอแล้ว' : 'ผลลัพธ์จากการสร้างวิดีโอและภาพจะแสดงที่นี่')}</h3>
@@ -418,7 +421,7 @@ function AppContent() {
             </div>
           </div>
         </div>
-        <div className="preview-bottom"><span className={`status-dot ${generation.status === 'completed' ? 'ready' : ''}`}/><span>{t(isMediaGeneration ? generation.status === 'idle' ? 'Waiting for generation' : generation.status === 'submitting' ? isImageUpload ? 'Uploading image to Botnoi' : 'Submitting to Botnoi GenAI' : generation.status === 'processing' ? 'Generation in progress' : generation.status === 'completed' ? isImageUpload ? 'Image uploaded' : mediaKind === 'image' ? 'Image ready' : 'Video ready' : 'Generation failed' : preview ? 'Request ready · API not connected' : 'Waiting for generation')}</span><span className="format-label">{resultType.toLowerCase()}</span></div>
+        <div className="preview-bottom"><span className={`status-dot ${generation.status === 'completed' ? 'ready' : ''}`}/><span>{t(isMediaGeneration ? generation.status === 'idle' ? 'Waiting for generation' : generation.status === 'submitting' ? isImageUpload ? 'Uploading image to Botnoi' : 'Submitting to Botnoi GenAI' : generation.status === 'processing' ? 'Generation in progress' : generation.status === 'completed' ? isImageUpload ? 'Image uploaded' : mediaKind === 'image' ? 'Image ready' : 'Video ready' : 'Generation failed' : preview ? 'Request ready · API not connected' : 'Waiting for generation')}</span>{isGenerating && <span className="generation-spinner" aria-hidden="true" />}<span className="format-label">{resultType.toLowerCase()}</span></div>
       </section>
     </main>
   </TryItPage> : <IndexPage endpointGroups={endpointGroups} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} activeEndpoint={activeEndpoint} selectEndpoint={selectEndpoint} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} theme={theme} setTheme={setTheme}>

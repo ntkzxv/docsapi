@@ -46,7 +46,7 @@ export const endpointGroups: EndpointGroup[] = [
   { name: 'Video AI Models', items: [
     { method: 'POST', name: 'Create Seedance 2.5 video', path: '/api/genai/wavespeed/bytedance/seedance-2.5/text-to-video' },
     { method: 'GET', name: 'Get Seedance 2.5 result' },
-    { method: 'POST', name: 'Create SeeDance 2.0 / Mini video', path: '/api/genai/byteplus/video-generation' },
+    { method: 'POST', name: 'Create SeeDance 2.0 video', path: '/api/genai/byteplus/video-generation' },
     { method: 'GET', name: 'Get SeeDance 2.0 result' },
     { method: 'POST', name: 'Create Motion Control video', path: '/api/genai/motion-control' },
     { method: 'GET', name: 'Get Motion Control result' },
@@ -169,13 +169,13 @@ export const seedance25ResultMarkdown = [
   'Status values: "pending" | "processing" | "completed" | "failed"',
 ].join('\n')
 export const endpointDocs: Record<string, Omit<EndpointDoc, 'title'>> = {
-  'Create SeeDance 2.0 / Mini video': {
+  'Create SeeDance 2.0 video': {
     method: 'POST', path: '/api/genai/byteplus/video-generation',
-    description: 'BytePlus Engine — Text-to-Video หรือ Image-to-Video ด้วย dreamina-seedance-2-0 หรือ mini model',
+    description: 'BytePlus Engine — Text-to-Video หรือ Image-to-Video ด้วยโมเดล dreamina-seedance-2-0-260128',
     body: { contentType: 'multipart/form-data', shape: 'SeeDance20Request', fields: [
       ['prompt', 'string', 'Yes', 'ข้อความ Prompt'],
       ['mode', 'string', 'Yes', '"text-to-video" หรือ "image-to-video"'],
-      ['model', 'string', 'No', '"dreamina-seedance-2-0-260128" หรือ "dreamina-seedance-2-0-mini-260615"'],
+      ['model', 'string', 'No', '"dreamina-seedance-2-0-260128"'],
       ['image_file', 'File', 'No', 'ไฟล์รูปภาพตั้งต้น (Image-to-Video)'],
       ['duration', 'string', 'Yes', '"5" หรือ "10"'],
       ['ratio', 'string', 'Yes', '"16:9" หรือ "9:16"'],
@@ -186,7 +186,7 @@ export const endpointDocs: Record<string, Omit<EndpointDoc, 'title'>> = {
   },
   'Get SeeDance 2.0 result': {
     method: 'GET', path: '/api/genai/byteplus/video-generation/{task_id}',
-    description: 'ตรวจสอบสถานะ task และดึง url_video ของ SeeDance 2.0 / Mini',
+    description: 'ตรวจสอบสถานะ task และดึง url_video ของ SeeDance 2.0',
     parameters: [['task_id', 'path', 'Yes', 'string', 'Task ID ที่ได้จาก POST (field: data.task_id)']],
     responses: [['200', 'Successful Response', 'ByteplusStatusResponse'], ['404', 'Task not found', 'ErrorResponse']],
     example: { data: { status: 'completed', url_video: 'https://storage.botnoi.ai/.../video.mp4' } },

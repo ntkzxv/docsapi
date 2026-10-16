@@ -26,7 +26,7 @@ npm run dev
 | Endpoint | Slug |
 | --- | --- |
 | Create Seedance 2.5 video | `create-seedance-2-5-video` |
-| Create SeeDance 2.0 / Mini video | `create-seedance-2-0-mini-video` |
+| Create SeeDance 2.0 video | `create-seedance-2-0-video` |
 | Create Motion Control video | `create-motion-control-video` |
 | Create InfiniteTalk avatar | `create-infinitetalk-avatar` |
 | Create OmniHuman avatar | `create-omnihuman-avatar` |

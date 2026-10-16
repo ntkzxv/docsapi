@@ -5,6 +5,7 @@ import type { BotnoiEndpoint, BotnoiRequestBodyField } from '../../types/botnoiE
 import type { RequestPreview } from '../../types/app'
 import type { FormEvent } from 'react'
 import { useLanguage } from '../../functions/LanguageProvider'
+import ProviderLogo, { type ApiProvider } from '../../components/ProviderLogo'
 
 type RequestFieldValue = string | boolean | File
 
@@ -29,7 +30,7 @@ function dropdownOptions(endpoint: BotnoiEndpoint, field: BotnoiRequestBodyField
 function initialValues(endpoint: BotnoiEndpoint): Record<string, RequestFieldValue> {
   return Object.fromEntries((endpoint.requestBody?.fields ?? []).map(field => [
     field.name,
-    field.type === 'boolean' ? false : '',
+    field.type === 'boolean' ? false : endpoint.id === 'gptimg-text2img' && field.name === 'resolution' ? '1k' : '',
   ]))
 }
 
@@ -44,6 +45,7 @@ export default function BotnoiRequestForm({ endpoint, onPreview, generationStatu
   const notify = useNotification()
   const { t } = useLanguage()
   const fields = endpoint.requestBody?.fields ?? []
+  const provider: ApiProvider | null = endpoint.path.includes('/byteplus/') ? 'byteplus' : endpoint.path.includes('/wavespeed/') ? 'wavespeed' : null
   const [values, setValues] = useState<Record<string, RequestFieldValue>>(() => initialValues(endpoint))
   const [error, setError] = useState('')
 
@@ -73,7 +75,7 @@ export default function BotnoiRequestForm({ endpoint, onPreview, generationStatu
   }
 
   return <>
-    <div className="panel-heading"><div className="heading-with-icon"><span className="model-icon">✦</span><div><h2>{t('Request settings')}</h2><p>{t('กรอกข้อมูลตามฟิลด์ของ endpoint')}</p></div></div></div>
+    <div className="panel-heading"><div className="heading-with-icon">{provider ? <ProviderLogo provider={provider}/> : <span className="model-icon">✦</span>}<div><h2>{t('Request settings')}</h2><p>{t('กรอกข้อมูลตามฟิลด์ของ endpoint')}</p></div></div></div>
     <form onSubmit={submit} noValidate>
       {fields.map(field => {
         const id = `botnoi-${endpoint.id}-${field.name}`

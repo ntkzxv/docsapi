@@ -18,6 +18,7 @@ interface AuthContextValue {
   signedIn: boolean
   profile: AuthProfile | null
   profileLoading: boolean
+  refreshProfile: () => Promise<void>
   openLoginPopup: () => void
   signOut: () => void
 }
@@ -73,6 +74,18 @@ export function BotnoiAuthProvider({ children }: { children: ReactNode }) {
   const [profileLoading, setProfileLoading] = useState(() => Boolean(localStorage.getItem(TOKEN_KEY)))
   const popupRef = useRef<Window | null>(null)
 
+  const refreshProfile = async (): Promise<void> => {
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (!token) return
+    setProfileLoading(true)
+    try {
+      const refreshedProfile = await fetchProfile(token)
+      if (refreshedProfile) setProfile(refreshedProfile)
+    } finally {
+      setProfileLoading(false)
+    }
+  }
+
   useEffect(() => {
     const savedToken = localStorage.getItem(TOKEN_KEY)
     if (savedToken) fetchProfile(savedToken).then(setProfile).finally(() => setProfileLoading(false))
@@ -118,11 +131,11 @@ export function BotnoiAuthProvider({ children }: { children: ReactNode }) {
     setProfileLoading(false)
   }
 
-  return <AuthContext.Provider value={{ signedIn, profile, profileLoading, openLoginPopup, signOut }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ signedIn, profile, profileLoading, refreshProfile, openLoginPopup, signOut }}>{children}</AuthContext.Provider>
 }
 
 export default function BotnoiAuthButton({ theme, onToggleTheme }: { theme: 'dark' | 'light'; onToggleTheme: () => void }) {
-  const { signedIn, profile, profileLoading, openLoginPopup, signOut } = useBotnoiAuth()
+  const { signedIn, profile, profileLoading, refreshProfile, openLoginPopup, signOut } = useBotnoiAuth()
   const { language, setLanguage, t } = useLanguage()
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuMounted, setMenuMounted] = useState(false)
@@ -202,6 +215,12 @@ export default function BotnoiAuthButton({ theme, onToggleTheme }: { theme: 'dar
             </div>
           </div>
           {signedIn ? <div className="auth-menu-balance-list" aria-label={t('Account balances')}>
+            <div className="auth-menu-balance-heading">
+              <span>{t('Account balances')}</span>
+              <button className="auth-menu-refresh" type="button" onClick={() => void refreshProfile()} disabled={profileLoading} aria-label={t('Refresh account data')} title={t('Refresh account data')}>
+                <Icon className={profileLoading ? 'is-refreshing' : undefined} name="refresh" width="15" height="15" />
+              </button>
+            </div>
             <div className="auth-menu-balance-row"><span>{t('Points')}</span><strong>{profileLoading ? t('Loading…') : profile?.points === null || profile?.points === undefined ? t('Unavailable') : profile.points.toLocaleString()}</strong></div>
             <div className="auth-menu-balance-row"><span>{t('Coins')}</span><strong>{profileLoading ? t('Loading…') : profile?.coinVoicebot === null || profile?.coinVoicebot === undefined ? t('Unavailable') : profile.coinVoicebot.toLocaleString()}</strong></div>
           </div> : <span className="auth-menu-balances">{t('Sign in or change your appearance')}</span>}

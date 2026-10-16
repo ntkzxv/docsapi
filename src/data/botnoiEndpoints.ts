@@ -19,7 +19,7 @@ export const sidebarGroups: SidebarGroup[] = [
     items: [
       { id: 'seedance25-submit',     label: 'Create Seedance 2.5 video',      method: 'POST' },
       { id: 'seedance25-status',     label: 'Get Seedance 2.5 result',         method: 'GET'  },
-      { id: 'seedance20-submit',     label: 'Create SeeDance 2.0 / Mini video', method: 'POST' },
+      { id: 'seedance20-submit',     label: 'Create SeeDance 2.0 video', method: 'POST' },
       { id: 'seedance20-status',     label: 'Get SeeDance 2.0 result',         method: 'GET'  },
       { id: 'motion-control-submit', label: 'Create Motion Control video',     method: 'POST' },
       { id: 'motion-control-status', label: 'Get Motion Control result',       method: 'GET'  },
@@ -32,8 +32,6 @@ export const sidebarGroups: SidebarGroup[] = [
       { id: 'infinitetalk-status', label: 'Get InfiniteTalk result',    method: 'GET'  },
       { id: 'omnihuman-submit',    label: 'Create OmniHuman avatar',    method: 'POST' },
       { id: 'omnihuman-status',    label: 'Get OmniHuman result',       method: 'GET'  },
-      { id: 'dreamactor-submit',   label: 'Create DreamActor',           method: 'POST' },
-      { id: 'dreamactor-status',   label: 'Get DreamActor result',       method: 'GET'  },
     ],
   },
   {
@@ -47,7 +45,6 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'GPT IMAGE STUDIO',
     items: [
       { id: 'gptimg-text2img',   label: 'Create GPT Image (Text to Image)', method: 'POST' },
-      { id: 'gptimg-upload',     label: 'Upload image for editing',         method: 'POST' },
       { id: 'gptimg-edit',       label: 'Edit image with prompt',           method: 'POST' },
       { id: 'gptimg-status',     label: 'Get GPT Image result',             method: 'GET'  },
     ],
@@ -155,13 +152,13 @@ export const endpoints: Record<string, Endpoint> = {
     responses: WAVESPEED_STATUS_RESPONSE,
   },
 
-  // ── SeeDance 2.0 / Mini ──────────────────────────────────────────────────────
+  // ── SeeDance 2.0 ────────────────────────────────────────────────────────────
   'seedance20-submit': {
     id: 'seedance20-submit',
-    title: 'Create SeeDance 2.0 / Mini video',
+    title: 'Create SeeDance 2.0 video',
     method: 'POST',
     path: '/api/genai/byteplus/video-generation',
-    description: 'BytePlus Engine — Text-to-Video หรือ Image-to-Video ด้วย dreamina-seedance-2-0 หรือ mini model',
+    description: 'BytePlus Engine — Text-to-Video หรือ Image-to-Video ด้วยโมเดล dreamina-seedance-2-0-260128',
     auth: true,
     parameters: [],
     requestBody: {
@@ -171,7 +168,7 @@ export const endpoints: Record<string, Endpoint> = {
       fields: [
         { name: 'prompt',     type: 'string', required: true,  description: 'ข้อความ Prompt' },
         { name: 'mode',       type: 'string', required: true,  description: '"text-to-video" หรือ "image-to-video"' },
-        { name: 'model',      type: 'string', required: false, description: '"dreamina-seedance-2-0-260128" หรือ "dreamina-seedance-2-0-mini-260615"' },
+        { name: 'model',      type: 'string', required: false, description: '"dreamina-seedance-2-0-260128"' },
         { name: 'image_file', type: 'File',   required: false, description: 'ไฟล์รูปภาพตั้งต้น (Image-to-Video)' },
         { name: 'duration',   type: 'string', required: true,  description: '"5" หรือ "10"' },
         { name: 'ratio',      type: 'string', required: true,  description: '"16:9" หรือ "9:16"' },
@@ -199,7 +196,7 @@ export const endpoints: Record<string, Endpoint> = {
     title: 'Get SeeDance 2.0 result',
     method: 'GET',
     path: '/api/genai/byteplus/video-generation/{task_id}',
-    description: 'ตรวจสอบสถานะ task และดึง url_video ของ SeeDance 2.0 / Mini',
+    description: 'ตรวจสอบสถานะ task และดึง url_video ของ SeeDance 2.0',
     auth: true,
     parameters: [
       { name: 'task_id', in: 'path', type: 'string', required: true, description: 'Task ID ที่ได้จาก POST (field: data.task_id)' },
@@ -475,7 +472,8 @@ export const endpoints: Record<string, Endpoint> = {
       fields: [
         { name: 'prompt',     type: 'string', required: true,  description: 'ข้อความสร้างรูปภาพ' },
         { name: 'model',      type: 'string', required: false, description: '"seedream-4-5-251128"' },
-        { name: 'parameters', type: 'string', required: true,  description: 'JSON: {"size":"1024x1024","sequential_image_generation":"disabled","watermark":false}' },
+        { name: 'resolution', type: 'string', required: true, description: '"480p" หรือ "720p"' },
+        { name: 'parameters', type: 'string', required: true, description: 'JSON: {"sequential_image_generation":"disabled","watermark":false}' },
         { name: 'image1',     type: 'File',   required: false, description: 'รูปภาพตั้งต้น (Image-to-Image)' },
       ],
     },
@@ -538,7 +536,7 @@ export const endpoints: Record<string, Endpoint> = {
       shape: 'GptImageTextToImageRequest',
       fields: [
         { name: 'prompt',               type: 'string',  required: true,  description: 'ข้อความอธิบายรูปภาพที่ต้องการสร้าง' },
-        { name: 'resolution',           type: 'string',  required: false, description: '"1k" หรือ "2k"' },
+        { name: 'resolution',           type: 'string',  required: true,  description: '"1k" หรือ "2k"' },
         { name: 'quality',              type: 'string',  required: false, description: '"low" | "medium" | "high"' },
         { name: 'aspect_ratio',         type: 'string',  required: false, description: '"1:1" | "16:9" | "9:16" | "4:3" (หรือเว้นว่าง)' },
         { name: 'output_format',        type: 'string',  required: false, description: '"png" | "jpeg" | "webp"' },

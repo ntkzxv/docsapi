@@ -220,8 +220,8 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
                             label="Resolution"
                             value={form.resolution}
                             options={[
-                                ['1k', '1K'],
-                                ['2k', '2K'],
+                                ['1k', '1k'],
+                                ['2k', '2k'],
                             ]}
                             onChange={value => update('resolution', value)}
                         />

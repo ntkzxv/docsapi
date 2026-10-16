@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Dispatch, ReactNode, SetStateAction } from 'react'
 import BotnoiAuthButton from '../components/BotnoiAuthButton'
+import botnoiLogo from '../assets/botnoi_logo.png'
 import type { EndpointGroup, EndpointItem } from '../types/app'
 import { useLanguage } from '../functions/LanguageProvider'
 
@@ -52,7 +53,7 @@ export default function IndexPage({ endpointGroups, expandedGroups, setExpandedG
   return <>
     {sidebarOpen && <button className="sidebar-scrim" aria-label={t('Close endpoint menu')} onClick={() => setSidebarOpen(false)}/>}
     <aside className={`endpoint-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      <a className="sidebar-brand" href="#/"><span>API Integration v1.0</span><strong>Botnoi AI Gateway</strong></a>
+      <a className="sidebar-brand" href="#/"><img src={botnoiLogo} alt="BOTNOI"/><span className="sidebar-brand-copy"><span>API Integration v1.0</span><strong>Botnoi AI Gateway</strong></span></a>
       <nav aria-label={t('API endpoint navigation')}>{endpointGroups.map(group => <section className="sidebar-group" key={group.name}>
         <button className="sidebar-group-title" aria-expanded={expandedGroups[group.name]} onClick={() => setExpandedGroups(current => ({ ...current, [group.name]: !current[group.name] }))}><span>{t(group.name)}</span><span className={`group-chevron ${expandedGroups[group.name] ? '' : 'collapsed'}`}>⌄</span></button>
         {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} className={`endpoint-tab ${activeEndpoint.name === item.name ? 'active' : ''}`} onClick={() => selectEndpoint(item)}><span className={`sidebar-method ${item.kind === 'model' ? 'model' : item.method.toLowerCase()}`}>{item.kind === 'model' ? 'WAIT' : item.method}</span><span className="sidebar-endpoint-name">{t(item.name)}</span></button>)}</div>}

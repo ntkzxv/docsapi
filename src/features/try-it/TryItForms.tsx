@@ -6,7 +6,7 @@ import type { EndpointDoc, RequestPreview } from '../../types/app'
 import type { Seedance20Request } from '../../services/seedance20'
 import { useLanguage } from '../../functions/LanguageProvider'
 
-export function Choice({ label, value, options, onChange }: { label: string; value: string; options: [string, ReactNode][]; onChange: (value: string) => void }) {
+export function Choice({ label, value, options, onChange }: { label: string; value: string; options: [string, ReactNode, boolean?][]; onChange: (value: string) => void }) {
   const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
@@ -26,7 +26,7 @@ export function Choice({ label, value, options, onChange }: { label: string; val
     <button type="button" className={`custom-select-trigger ${open ? 'is-open' : ''}`} aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(v => !v)}>
       <span>{current?.[1] ?? t('เลือกตัวเลือก')}</span><span className="select-chevron" aria-hidden="true"/>
     </button>
-    {open && <div className="custom-select-menu" role="listbox" aria-label={t(label)}>{options.map(([key, text]) => <button key={key || 'default'} type="button" role="option" aria-selected={value === key} className={value === key ? 'is-selected' : ''} onClick={() => { onChange(key); setOpen(false) }}>{typeof text === 'string' ? t(text) : text}{value === key && <span className="option-check" aria-hidden="true">✓</span>}</button>)}</div>}
+    {open && <div className="custom-select-menu" role="listbox" aria-label={t(label)}>{options.map(([key, text, disabled]) => <button key={key || 'default'} type="button" role="option" aria-selected={value === key} aria-disabled={disabled} disabled={disabled} className={`${value === key ? 'is-selected' : ''} ${disabled ? 'is-disabled' : ''}`} onClick={() => { onChange(key); setOpen(false) }}>{typeof text === 'string' ? t(text) : text}{value === key && <span className="option-check" aria-hidden="true">✓</span>}</button>)}</div>}
   </div>
 }
 export function WaveSpeedModelForm({ doc, onPreview }: { doc: EndpointDoc & { formFields: NonNullable<EndpointDoc['formFields']> }; onPreview: (data: RequestPreview) => void }) {
@@ -144,7 +144,7 @@ export function SeeDreamForm({ onGenerate, generationStatus }: { onGenerate: (da
   const { t } = useLanguage()
   const [prompt, setPrompt] = useState('')
   const [model, setModel] = useState('seedream-4-5-251128')
-  const [size, setSize] = useState('2K')
+  const [resolution, setResolution] = useState('720p')
   const [watermark, setWatermark] = useState('false')
   const [image, setImage] = useState<File | null>(null)
   const [error, setError] = useState('')
@@ -152,8 +152,8 @@ export function SeeDreamForm({ onGenerate, generationStatus }: { onGenerate: (da
     event.preventDefault()
     if (!prompt.trim()) { const message = 'กรุณากรอก Prompt ก่อนสร้างคำขอ'; setError(message); notify('failure', message); return }
     setError('')
-    const parameters = JSON.stringify({ size, sequential_image_generation: 'disabled', watermark: watermark === 'true' })
-    onGenerate({ prompt: prompt.trim(), ...(model.trim() && { model: model.trim() }), parameters, ...(image && { image1: image }) })
+    const parameters = JSON.stringify({ sequential_image_generation: 'disabled', watermark: watermark === 'true' })
+    onGenerate({ prompt: prompt.trim(), ...(model.trim() && { model: model.trim() }), resolution, parameters, ...(image && { image1: image }) })
   }
   return <form className="avatar-form seedream-form" onSubmit={submit}>
     <div>
@@ -162,7 +162,7 @@ export function SeeDreamForm({ onGenerate, generationStatus }: { onGenerate: (da
     </div>
     <Choice label="Model" value={model} options={[[ 'seedream-4-5-251128', 'SeeDream 4.5' ]]} onChange={setModel}/>
     <div className="settings-row seedream-settings-row">
-      <Choice label="Resolution" value={size} options={[[ '2K', '2K · Standard' ], [ '4K', '4K · High detail' ]]} onChange={setSize}/>
+      <Choice label="Resolution" value={resolution} options={[[ '480p', '480p' ], [ '720p', '720p' ]]} onChange={setResolution}/>
       <Choice label="Watermark" value={watermark} options={[[ 'false', 'Off' ], [ 'true', 'On' ]]} onChange={setWatermark}/>
     </div>
     <div className="seedream-image-field">
@@ -178,7 +178,7 @@ export function Seedance20Form({ onGenerate, generationStatus }: { onGenerate: (
   const { t } = useLanguage()
   const [prompt, setPrompt] = useState('')
   const [mode, setMode] = useState('text-to-video')
-  const [model, setModel] = useState('')
+  const [model, setModel] = useState('dreamina-seedance-2-0-260128')
   const [image, setImage] = useState<File | null>(null)
   const [duration, setDuration] = useState('5')
   const [ratio, setRatio] = useState('16:9')
@@ -196,7 +196,7 @@ export function Seedance20Form({ onGenerate, generationStatus }: { onGenerate: (
       <div className="prompt-input"><textarea id="seedance20-prompt" required value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('อธิบายวิดีโอและการเคลื่อนไหวที่ต้องการ…')} rows={4}/><div className="prompt-footer"><span>{t('ระบุฉากและการเคลื่อนไหวในวิดีโอ')}</span><span>{prompt.length} {t('characters')}</span></div></div>
     </div>
     <Choice label="Mode" value={mode} options={[[ 'text-to-video', 'Text-to-Video' ], [ 'image-to-video', 'Image-to-Video' ]]} onChange={value => { setMode(value); setError('') }}/>
-    <Choice label="Model" value={model} options={[[ '', 'ใช้ค่าเริ่มต้นของ API' ], [ 'dreamina-seedance-2-0-260128', 'Seedance 2.0' ], [ 'dreamina-seedance-2-0-mini-260615', 'Seedance 2.0 Mini' ]]} onChange={setModel}/>
+    <Choice label="Model" value={model} options={[[ 'dreamina-seedance-2-0-260128', 'Seedance 2.0' ], [ 'dreamina-seedance-2-0-mini-260615', <>{t('Seedance 2.0 Mini')} <span className="optional-tag">{t('Disabled')}</span></>, true]]} onChange={setModel}/>
     {mode === 'image-to-video' && <div className="seedream-image-field"><div className="prompt-label">{t('Starting image')} <span className="optional-tag">{t('Optional')}</span></div><label className={`avatar-dropzone seedream-dropzone ${image ? 'has-file' : ''}`} htmlFor="seedance20-image"><span className="avatar-upload-icon"><Icon name="upload"/></span><strong>{image ? image.name : t('เลือกภาพตั้งต้น')}</strong><span>{image ? `${(image.size / (1024 * 1024)).toFixed(2)} MB` : t('ภาพที่ใช้เป็นเฟรมเริ่มต้นของวิดีโอ')}</span><input id="seedance20-image" type="file" accept="image/*" onChange={event => setImage(event.target.files?.[0] ?? null)}/></label></div>}
     <div className="settings-row"><Choice label="Duration" value={duration} options={[[ '5', '5 seconds' ], [ '10', '10 seconds' ]]} onChange={setDuration}/><Choice label="Ratio" value={ratio} options={[[ '16:9', '16:9' ], [ '9:16', '9:16' ]]} onChange={setRatio}/></div>
     <Choice label="Resolution" value={resolution} options={[[ '480p', '480p' ], [ '720p', '720p' ], [ '1080p', '1080p' ]]} onChange={setResolution}/>
