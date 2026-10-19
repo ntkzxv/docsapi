@@ -1,4 +1,5 @@
 import Icon from '../components/Icon'
+import EndpointRoute from '../components/EndpointRoute'
 import type { ReactNode } from 'react'
 import { BOTNOI_API_BASE_URL } from '../data/botnoiEndpoints'
 import type { BotnoiEndpoint } from '../types/botnoiEndpoint'
@@ -25,8 +26,8 @@ export default function BotnoiEndpointPage({ endpoint, onTry, markdownCopied, on
   return <article className="endpoint-docs">
     <div className="endpoint-docs-title-row"><h1>{t(endpoint.title)}</h1><button className="markdown-copy-button" onClick={onCopyMarkdown}><Icon name="copy" width="15" height="15"/>{t(markdownCopied ? 'Copied!' : 'Copy as Markdown')}</button></div>
     {endpoint.description && <p className="endpoint-docs-description">{t(endpoint.description)}</p>}
-    {endpoint.method === 'POST' && onTry && <aside className="endpoint-try-group"><div><h2>{t('ทดลองใช้ endpoint นี้')}</h2><p>{t('ส่งคำขอไปยัง Botnoi API จริง งานสร้างสื่ออาจหัก coin หรือ credit ตามเงื่อนไขของ API')}</p></div><button className="endpoint-launch-button" onClick={onTry}>{t('Try it')} <Icon name="arrow" width="17" height="17"/></button></aside>}
-    <section className="endpoint-docs-section"><h2>{t('Endpoint')}</h2><p><strong>{endpoint.method}</strong> <code>{BOTNOI_API_BASE_URL}{endpoint.path}</code></p></section>
+    {endpoint.method === 'POST' && onTry && <aside className="endpoint-try-group"><div><h2>{t('ทดลองใช้ endpoint นี้')}</h2><p>{t('ส่งคำขอไปยัง Botnoi API จริง งานสร้างสื่ออาจหัก coin หรือ credit ตามเงื่อนไขของ API')}</p></div><button className="endpoint-launch-button" onClick={onTry}><span>Try it on <strong>Botnoi</strong></span><Icon name="arrow" width="17" height="17"/></button></aside>}
+    <section className="endpoint-docs-section"><h2>{t('Endpoint')}</h2><EndpointRoute method={endpoint.method} url={`${BOTNOI_API_BASE_URL}${endpoint.path}`}/></section>
     <section className="endpoint-docs-section"><h2>{t('Auth')}</h2><p>{t(endpoint.auth ? 'Authentication required.' : 'No authentication required.')}</p></section>
     <section className="endpoint-docs-section"><h2>{t('Parameters')}</h2>{endpoint.parameters.length ? <Table columns={['Name', 'In', 'Required', 'Type', 'Description']} rows={endpoint.parameters.map(parameter => [parameter.name, parameter.in, parameter.required ? 'Yes' : 'No', parameter.type, parameter.description])}/> : <p>{t('No parameters.')}</p>}</section>
     <section className="endpoint-docs-section"><h2>{t('Request Body')}</h2>{endpoint.requestBody ? <>

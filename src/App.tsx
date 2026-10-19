@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import Icon from './components/Icon'
+import EndpointRoute from './components/EndpointRoute'
 import ProviderLogo, { type ApiProvider } from './components/ProviderLogo'
 import ApiDocsFooter from './components/ApiDocsFooter'
 import IndexPage from './pages/IndexPage'
+import HomePage from './pages/HomePage'
+import CategoryPage from './pages/CategoryPage'
 import TryItPage from './pages/TryItPage'
 import { Choice, InfiniteTalkForm, MotionControlForm, OmniHumanForm, SeeDreamForm, Seedance20Form, WaveSpeedModelForm } from './features/try-it/TryItForms'
 import GPTImagePage from './pages/gptimagepage'
@@ -23,6 +26,7 @@ import type { FormEvent, InvalidEvent, MouseEvent } from 'react'
 import type { EndpointDoc, EndpointGroup, EndpointItem, InitialVideoForm, RequestPreview, UploadedMedia } from './types/app'
 import type { Seedance20Request } from './services/seedance20'
 import type { VideoGeneration, Seedance25Request } from './services/seedance25'
+import type { ModelCategory } from './data/modelCatalog'
 
 const endpointGroups: EndpointGroup[] = [...botnoiEndpointGroups, ...catalogGroups.filter(group => group.name === 'Feature Model')]
 const integratedEndpoints = endpointGroups.flatMap(group => group.items)
@@ -45,7 +49,7 @@ function TryItCallout({ onTry, live = true }: { onTry: () => void; live?: boolea
   const { t } = useLanguage()
   return <aside className="endpoint-try-group">
     <div><h2>{t('ทดลองใช้ endpoint นี้')}</h2><p>{t(live ? 'ส่งคำขอไปยัง Botnoi API จริง งานสร้างสื่ออาจหัก coin หรือ credit ตามเงื่อนไขของ API' : 'กรอกข้อมูลและดูตัวอย่าง Request ได้ โดยยังไม่ส่งข้อมูลไปยัง API จริง')}</p></div>
-    <button className="endpoint-launch-button" onClick={onTry}>{t('Try it')} <Icon name="arrow" width="17" height="17"/></button>
+    <button className="endpoint-launch-button" onClick={onTry}><span>Try it on <strong>Botnoi</strong></span><Icon name="arrow" width="17" height="17"/></button>
   </aside>
 }
 function EndpointDocsPage({ doc, markdownCopied, onCopyMarkdown, onTry }: { doc: EndpointDoc; markdownCopied: boolean; onCopyMarkdown: () => void; onTry: () => void }) {
@@ -53,6 +57,7 @@ function EndpointDocsPage({ doc, markdownCopied, onCopyMarkdown, onTry }: { doc:
   return <article className="endpoint-docs">
     <div className="endpoint-docs-title-row"><h1>{t(doc.title)}</h1><button className="markdown-copy-button" onClick={onCopyMarkdown}><Icon name="copy" width="15" height="15"/>{t(markdownCopied ? 'Copied!' : 'Copy as Markdown')}</button></div>
     {doc.description && <p className="endpoint-docs-description">{t(doc.description)}</p>}
+    {doc.path && <section className="endpoint-docs-section endpoint-route-section"><h2>{t('Endpoint')}</h2><EndpointRoute method={doc.method} url={`${doc.sourceUrl ? 'https://api.wavespeed.ai' : BOTNOI_API_BASE_URL}${doc.path}`}/></section>}
     {doc.scopeNote && !doc.hideAttribution && <p className="endpoint-scope-note">{t(doc.scopeNote)} · {t('Base URL')}: <code>https://api.wavespeed.ai</code></p>}
     {doc.sourceUrl && !doc.hideAttribution && <p className="endpoint-source">{t('อ้างอิง')} <a href={doc.sourceUrl} target="_blank" rel="noopener noreferrer">{t('เอกสาร WaveSpeedAI ↗')}</a></p>}
     {doc.method === 'POST' && onTry && <TryItCallout onTry={onTry} live={!doc.sourceUrl}/>}
@@ -71,12 +76,18 @@ const endpointFromHash = (): EndpointItem => {
   const resolvedSlug = legacyModels[routeSlug ?? ''] ?? (routeSlug === 'kling-1-5' ? 'kling-3-0-std' : routeSlug)
   return integratedEndpoints.find(item => item.id === routeSlug || slug(item.name) === resolvedSlug) ?? integratedEndpoints.find(item => item.method === 'POST') ?? integratedEndpoints[0]!
 }
+const categoryFromHash = (): ModelCategory | null => {
+  const category = window.location.hash.match(/^#\/category\/(video-generation|image-generation|talking-avatars)$/)?.[1]
+  return category as ModelCategory | undefined ?? null
+}
 function AppContent() {
   const notify = useNotification()
   const { signedIn, openLoginPopup } = useBotnoiAuth()
   const { t } = useLanguage()
   const nativeInvalidNotified = useRef(false)
   const [activeEndpoint, setActiveEndpoint] = useState<EndpointItem>(endpointFromHash)
+  const [isHome, setIsHome] = useState(() => !window.location.hash || window.location.hash === '#/')
+  const [category, setCategory] = useState<ModelCategory | null>(categoryFromHash)
   const [isTryPage, setIsTryPage] = useState(() => window.location.hash.startsWith('#/try-it-now/') && supportsTryIt(endpointFromHash()))
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => Object.fromEntries(endpointGroups.map(group => [group.name, true])))
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -93,6 +104,8 @@ function AppContent() {
     const syncEndpoint = () => {
       const item = endpointFromHash()
       setActiveEndpoint(item)
+      setIsHome(!window.location.hash || window.location.hash === '#/')
+      setCategory(categoryFromHash())
       setIsTryPage(window.location.hash.startsWith('#/try-it-now/') && supportsTryIt(item))
     }
     window.addEventListener('popstate', syncEndpoint)
@@ -108,6 +121,8 @@ function AppContent() {
     setPreview(null)
     setMarkdownCopied(false)
     window.history.pushState({}, '', `#/${item.kind === 'model' ? 'model' : 'endpoint'}/${item.kind === 'botnoi' ? item.id : slug(item.name)}`)
+    setIsHome(false)
+    setCategory(null)
     setIsTryPage(false)
     setSidebarOpen(false)
   }
@@ -117,6 +132,13 @@ function AppContent() {
     setPreview(null)
     window.history.pushState({}, '', `#/try-it-now/${activeEndpoint.kind === 'botnoi' ? activeEndpoint.id : slug(activeEndpoint.name)}`)
     setIsTryPage(true)
+  }
+  const openCategory = (nextCategory: ModelCategory) => {
+    window.history.pushState({}, '', `#/category/${nextCategory}`)
+    setIsHome(false)
+    setCategory(nextCategory)
+    setIsTryPage(false)
+    setSidebarOpen(false)
   }
   const copyMarkdown = async () => {
     try {
@@ -424,11 +446,13 @@ function AppContent() {
         <div className="preview-bottom"><span className={`status-dot ${generation.status === 'completed' ? 'ready' : ''}`}/><span>{t(isMediaGeneration ? generation.status === 'idle' ? 'Waiting for generation' : generation.status === 'submitting' ? isImageUpload ? 'Uploading image to Botnoi' : 'Submitting to Botnoi GenAI' : generation.status === 'processing' ? 'Generation in progress' : generation.status === 'completed' ? isImageUpload ? 'Image uploaded' : mediaKind === 'image' ? 'Image ready' : 'Video ready' : 'Generation failed' : preview ? 'Request ready · API not connected' : 'Waiting for generation')}</span>{isGenerating && <span className="generation-spinner" aria-hidden="true" />}<span className="format-label">{resultType.toLowerCase()}</span></div>
       </section>
     </main>
-  </TryItPage> : <IndexPage endpointGroups={endpointGroups} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} activeEndpoint={activeEndpoint} selectEndpoint={selectEndpoint} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} theme={theme} setTheme={setTheme}>
+  </TryItPage> : <IndexPage endpointGroups={endpointGroups} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} activeEndpoint={activeEndpoint} selectEndpoint={selectEndpoint} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} theme={theme} setTheme={setTheme} isHome={isHome || Boolean(category)}>
+    {isHome ? <HomePage endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint} onOpenCategory={openCategory}/> : category ? <CategoryPage category={category} endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint}/> : <>
     <main className={`catalog-content ${activeEndpoint.botnoiId || ['Create Seedance 2.5 video', 'Get Seedance 2.5 result'].includes(activeEndpoint.name) || endpointDocs[activeEndpoint.name] || wavespeedModels[activeEndpoint.name] ? 'has-endpoint-docs' : ''}`}>
       {activeEndpoint.botnoiId ? <BotnoiEndpointPage endpoint={botnoiEndpoints[activeEndpoint.botnoiId]} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={supportsTryIt(activeEndpoint) ? openTryIt : null}/> : activeEndpoint.name === 'Create Seedance 2.5 video' ? <article className="endpoint-docs">
         <div className="endpoint-docs-title-row"><h1>{t('Create Seedance 2.5 video')}</h1><button className="markdown-copy-button" onClick={copyMarkdown}><Icon name="copy" width="15" height="15"/>{t(markdownCopied ? 'Copied!' : 'Copy as Markdown')}</button></div>
         <p className="endpoint-docs-description">{t('โมเดลสร้างวิดีโอคุณภาพสูง (Flagship) รองรับ Text-to-Video, Image-to-Video (First & Last frame) และ Reference Media')}</p>
+        <section className="endpoint-docs-section endpoint-route-section"><h2>{t('Endpoint')}</h2><EndpointRoute method="POST" url={`${BOTNOI_API_BASE_URL}/api/genai/wavespeed/bytedance/seedance-2.5/text-to-video`}/></section>
         <TryItCallout onTry={openTryIt}/>
         <section className="endpoint-docs-section"><h2>{t('Auth')}</h2><p>{t('Authentication required.')}</p></section>
         <section className="endpoint-docs-section"><h2>{t('Parameters')}</h2><p>{t('No parameters.')}</p></section>
@@ -475,9 +499,10 @@ function AppContent() {
     "error": ""
   }
 }`}</pre><p className="endpoint-status-note">{t('Status')}: <code>pending</code> | <code>processing</code> | <code>completed</code> | <code>failed</code></p></section>
-      </article> : endpointDocs[activeEndpoint.name] ? <EndpointDocsPage doc={{ title: activeEndpoint.name, ...endpointDocs[activeEndpoint.name] }} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={openTryIt}/> : wavespeedModels[activeEndpoint.name]?.available === false ? <article className="endpoint-docs"><h1>{t(wavespeedModels[activeEndpoint.name].title)}</h1><p className="endpoint-unavailable-note">{t(wavespeedModels[activeEndpoint.name].description ?? '')}</p><p className="endpoint-docs-description">{t('สามารถตรวจสอบรายการโมเดลปัจจุบันได้ที่')} <a href="https://wavespeed.ai/models" target="_blank" rel="noopener noreferrer">WaveSpeedAI Models ↗</a></p></article> : wavespeedModels[activeEndpoint.name] ? <EndpointDocsPage doc={wavespeedModels[activeEndpoint.name]} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={openTryIt}/> : activeEndpoint.method === 'POST' && <button className="endpoint-launch-button" onClick={openTryIt}>{t('Try it')} <Icon name="arrow" width="17" height="17"/></button>}
+      </article> : endpointDocs[activeEndpoint.name] ? <EndpointDocsPage doc={{ title: activeEndpoint.name, ...endpointDocs[activeEndpoint.name] }} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={openTryIt}/> : wavespeedModels[activeEndpoint.name]?.available === false ? <article className="endpoint-docs"><h1>{t(wavespeedModels[activeEndpoint.name].title)}</h1><p className="endpoint-unavailable-note">{t(wavespeedModels[activeEndpoint.name].description ?? '')}</p><p className="endpoint-docs-description">{t('สามารถตรวจสอบรายการโมเดลปัจจุบันได้ที่')} <a href="https://wavespeed.ai/models" target="_blank" rel="noopener noreferrer">WaveSpeedAI Models ↗</a></p></article> : wavespeedModels[activeEndpoint.name] ? <EndpointDocsPage doc={wavespeedModels[activeEndpoint.name]} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={openTryIt}/> : activeEndpoint.method === 'POST' && <button className="endpoint-launch-button" onClick={openTryIt}><span>Try it on <strong>Botnoi</strong></span><Icon name="arrow" width="17" height="17"/></button>}
       <ApiDocsFooter />
     </main>
+    </>}
   </IndexPage>}
   </div>
 }
