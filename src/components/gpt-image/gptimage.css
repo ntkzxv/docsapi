@@ -13,6 +13,44 @@
   margin-top: 8px;
 }
 
+.prompt-footer .prompt-generate-button {
+  padding: 4px 9px;
+  border: 1px solid #41454d;
+  border-radius: 5px;
+  background: #272a30;
+  color: #e1e4e9;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.prompt-footer .prompt-character-count {
+  white-space: nowrap;
+}
+
+.prompt-footer .prompt-generate-button:hover {
+  border-color: #666b74;
+  background: #32363e;
+}
+
+.prompt-footer .prompt-generate-button:focus-visible {
+  outline: 2px solid #aab0ba;
+  outline-offset: 2px;
+}
+
+.light-mode .prompt-footer .prompt-generate-button {
+  border-color: #c6cbd2;
+  background: #f0f1f3;
+  color: #303742;
+}
+
+.light-mode .prompt-footer .prompt-generate-button:hover {
+  border-color: #9da5b1;
+  background: #e5e7ea;
+}
+
 /* GPT Image - Upload Validation */
 .app-shell .avatar-dropzone.gpt-image-error,
 .app-shell .avatar-dropzone.gpt-image-error:hover,

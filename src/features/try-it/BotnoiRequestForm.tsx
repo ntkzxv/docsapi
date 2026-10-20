@@ -6,6 +6,7 @@ import type { RequestPreview } from '../../types/app'
 import type { FormEvent } from 'react'
 import { useLanguage } from '../../functions/LanguageProvider'
 import ProviderLogo, { type ApiProvider } from '../../components/ProviderLogo'
+import PromptFooter from '../../components/PromptFooter'
 
 type RequestFieldValue = string | boolean | File
 
@@ -88,7 +89,10 @@ export default function BotnoiRequestForm({ endpoint, onPreview, generationStatu
             {options ? <Choice label={`${field.name}${field.required ? ' *' : ''}`} value={String(values[field.name] ?? '')} options={options} onChange={value => setValues(current => ({ ...current, [field.name]: value }))}/> : <label className="prompt-label" htmlFor={id}>{t(field.name)} {field.required ? <span className="required">*</span> : <span className="optional-tag">{t('Optional')}</span>}</label>}
             {!options && <>
             <div className="prompt-input">
-              {isFile ? <label className="botnoi-file-picker" htmlFor={id}><span className="botnoi-file-button">{t('Choose file')}</span><span className="botnoi-file-name">{values[field.name] instanceof File ? (values[field.name] as File).name : t('No file chosen')}</span><input id={id} className="botnoi-file-input" type="file" onChange={event => setValues(current => ({ ...current, [field.name]: event.target.files?.[0] ?? '' }))}/></label> : isLongText ? <textarea id={id} required={field.required} value={String(values[field.name] ?? '')} onChange={event => setValues(current => ({ ...current, [field.name]: event.target.value }))} placeholder={t(field.description)} rows={field.name === 'prompt' ? 4 : 3}/> : <input id={id} required={field.required} type={field.type === 'number' || field.type === 'integer' ? 'number' : 'text'} value={String(values[field.name] ?? '')} onChange={event => setValues(current => ({ ...current, [field.name]: event.target.value }))} placeholder={t(field.description)}/>}
+              {isFile ? <label className="botnoi-file-picker" htmlFor={id}><span className="botnoi-file-button">{t('Choose file')}</span><span className="botnoi-file-name">{values[field.name] instanceof File ? (values[field.name] as File).name : t('No file chosen')}</span><input id={id} className="botnoi-file-input" type="file" onChange={event => setValues(current => ({ ...current, [field.name]: event.target.files?.[0] ?? '' }))}/></label> : isLongText ? <>
+                <textarea id={id} required={field.required} value={String(values[field.name] ?? '')} onChange={event => setValues(current => ({ ...current, [field.name]: event.target.value }))} placeholder={t(field.description)} rows={field.name === 'prompt' ? 4 : 3}/>
+                {field.name === 'prompt' && <PromptFooter value={String(values[field.name] ?? '')} model={`${endpoint.id} ${endpoint.title}`} onChange={prompt => setValues(current => ({ ...current, [field.name]: prompt }))} disabled={generationStatus === 'submitting' || generationStatus === 'processing'}/>}
+              </> : <input id={id} required={field.required} type={field.type === 'number' || field.type === 'integer' ? 'number' : 'text'} value={String(values[field.name] ?? '')} onChange={event => setValues(current => ({ ...current, [field.name]: event.target.value }))} placeholder={t(field.description)}/>}
             </div>
             </>}
           </>}

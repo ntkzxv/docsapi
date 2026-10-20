@@ -3,6 +3,7 @@ import './App.css'
 import Icon from './components/Icon'
 import EndpointRoute from './components/EndpointRoute'
 import ProviderLogo, { type ApiProvider } from './components/ProviderLogo'
+import PromptFooter from './components/PromptFooter'
 import ApiDocsFooter from './components/ApiDocsFooter'
 import IndexPage from './pages/IndexPage'
 import HomePage from './pages/HomePage'
@@ -95,6 +96,16 @@ function AppContent() {
   const [markdownCopied, setMarkdownCopied] = useState(false)
   const [generation, setGeneration] = useState<GenerationState>({ status: 'idle' })
   const generationAbortRef = useRef<AbortController | null>(null)
+  const routeHashRef = useRef(window.location.hash)
+  const hasGenerationResult = Boolean(generation.mediaUrl || generation.imageUrl || generation.videoUrl)
+  const shouldProtectGeneration = generation.status === 'submitting'
+    || generation.status === 'processing'
+    || generation.status === 'completed'
+    || hasGenerationResult
+  const confirmGenerationExit = () => {
+    if (!shouldProtectGeneration) return true
+    return window.confirm('มีงานสร้างที่กำลังดำเนินการหรือมีผลลัพธ์แล้ว หากออกจากหน้านี้ ผลลัพธ์อาจหายไป ต้องการออกจากหน้าหรือไม่?')
+  }
   const resetGeneration = () => {
     generationAbortRef.current?.abort()
     generationAbortRef.current = null
@@ -102,6 +113,13 @@ function AppContent() {
   }
   useEffect(() => {
     const syncEndpoint = () => {
+      const nextHash = window.location.hash
+      if (!confirmGenerationExit()) {
+        window.history.pushState({}, '', routeHashRef.current || '/')
+        return
+      }
+      if (nextHash !== routeHashRef.current) resetGeneration()
+      routeHashRef.current = nextHash
       const item = endpointFromHash()
       setActiveEndpoint(item)
       setIsHome(!window.location.hash || window.location.hash === '#/')
@@ -111,16 +129,29 @@ function AppContent() {
     window.addEventListener('popstate', syncEndpoint)
     window.addEventListener('hashchange', syncEndpoint)
     return () => { window.removeEventListener('popstate', syncEndpoint); window.removeEventListener('hashchange', syncEndpoint) }
-  }, [])
+  }, [shouldProtectGeneration])
   useEffect(() => () => generationAbortRef.current?.abort(), [])
+  useEffect(() => {
+    if (!shouldProtectGeneration) return
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', warnBeforeUnload)
+    return () => window.removeEventListener('beforeunload', warnBeforeUnload)
+  }, [shouldProtectGeneration])
   useEffect(() => { resetGeneration() }, [activeEndpoint.id])
   useEffect(() => { localStorage.setItem('try-it-theme', theme) }, [theme])
   const selectEndpoint = (item: EndpointItem) => {
+    const nextHash = `#/${item.kind === 'model' ? 'model' : 'endpoint'}/${item.kind === 'botnoi' ? item.id : slug(item.name)}`
+    if (!confirmGenerationExit()) return
     resetGeneration()
     setActiveEndpoint(item)
     setPreview(null)
     setMarkdownCopied(false)
-    window.history.pushState({}, '', `#/${item.kind === 'model' ? 'model' : 'endpoint'}/${item.kind === 'botnoi' ? item.id : slug(item.name)}`)
+    window.history.pushState({}, '', nextHash)
+    routeHashRef.current = nextHash
     setIsHome(false)
     setCategory(null)
     setIsTryPage(false)
@@ -128,13 +159,20 @@ function AppContent() {
   }
   const openTryIt = () => {
     if (!supportsTryIt(activeEndpoint)) return
+    const nextHash = `#/try-it-now/${activeEndpoint.kind === 'botnoi' ? activeEndpoint.id : slug(activeEndpoint.name)}`
+    if (!confirmGenerationExit()) return
     resetGeneration()
     setPreview(null)
-    window.history.pushState({}, '', `#/try-it-now/${activeEndpoint.kind === 'botnoi' ? activeEndpoint.id : slug(activeEndpoint.name)}`)
+    window.history.pushState({}, '', nextHash)
+    routeHashRef.current = nextHash
     setIsTryPage(true)
   }
   const openCategory = (nextCategory: ModelCategory) => {
-    window.history.pushState({}, '', `#/category/${nextCategory}`)
+    const nextHash = `#/category/${nextCategory}`
+    if (!confirmGenerationExit()) return
+    resetGeneration()
+    window.history.pushState({}, '', nextHash)
+    routeHashRef.current = nextHash
     setIsHome(false)
     setCategory(nextCategory)
     setIsTryPage(false)
@@ -354,7 +392,14 @@ function AppContent() {
     notify('system', t('กรุณาเข้าสู่ระบบเพื่อใช้งาน'))
     openLoginPopup()
   }
-  const goBack = () => { window.history.pushState({}, '', `#/${activeEndpoint.kind === 'model' ? 'model' : 'endpoint'}/${activeEndpoint.kind === 'botnoi' ? activeEndpoint.id : slug(activeEndpoint.name)}`); setIsTryPage(false) }
+  const goBack = () => {
+    const nextHash = `#/${activeEndpoint.kind === 'model' ? 'model' : 'endpoint'}/${activeEndpoint.kind === 'botnoi' ? activeEndpoint.id : slug(activeEndpoint.name)}`
+    if (!confirmGenerationExit()) return
+    resetGeneration()
+    window.history.pushState({}, '', nextHash)
+    routeHashRef.current = nextHash
+    setIsTryPage(false)
+  }
   const toggleTheme = () => setTheme(current => current === 'dark' ? 'light' : 'dark')
   const mediaKind = activeEndpoint.botnoiId === 'gptimg-upload'
     ? 'image'
@@ -412,7 +457,7 @@ function AppContent() {
         <div className="panel-heading"><div className="heading-with-icon">{providerHeadingIcon}<div><h2>{t('Video settings')}</h2><p>{t('กำหนดรายละเอียดวิดีโอของคุณ')}</p></div></div><button className="icon-button" title={t('Reset form')} aria-label={t('Reset form')} onClick={reset} disabled={reading}><Icon name="reset"/></button></div>
         <form onSubmit={submit} noValidate={activeEndpoint.method === 'POST'}>
           <label className="prompt-label" htmlFor="prompt">{t('Prompt')} <span className="required">*</span></label>
-          <div className="prompt-input"><textarea id="prompt" required={activeEndpoint.method !== 'POST'} value={form.prompt} onChange={e => update('prompt', e.target.value)} placeholder={t('อธิบายฉาก การเคลื่อนไหว แสง และบรรยากาศของวิดีโอที่คุณต้องการ…')}/><div className="prompt-footer"><span>{t('รายละเอียดที่ชัดเจนช่วยให้ได้ผลลัพธ์ที่ตรงใจ')}</span><span>{form.prompt.length} {t('characters')}</span></div></div>
+          <div className="prompt-input"><textarea id="prompt" required={activeEndpoint.method !== 'POST'} value={form.prompt} onChange={e => update('prompt', e.target.value)} placeholder={t('อธิบายฉาก การเคลื่อนไหว แสง และบรรยากาศของวิดีโอที่คุณต้องการ…')}/><PromptFooter value={form.prompt} model={activeEndpoint.name} onChange={prompt => update('prompt', prompt)} disabled={reading || (isSeedance25 && isGenerating)}/></div>
           <div className="settings-row"><Choice label={t('Duration')} value={form.duration} options={[[ '5', t('5 seconds') ], [ '10', t('10 seconds') ]]} onChange={v => update('duration', v)}/><Choice label={t('Resolution')} value={form.resolution} options={[[ '480p', '480p' ], [ '720p', '720p' ], [ '1080p', '1080p' ]]} onChange={v => update('resolution', v)}/></div>
           <Choice label={t('Aspect ratio')} value={form.aspect_ratio} options={[[ '', t('Default') ], [ '16:9', <><span className="ratio landscape"/>16:9</> ], [ '9:16', <><span className="ratio portrait"/>9:16</> ]]} onChange={v => update('aspect_ratio', v)}/>
           <div className="audio-row"><div><label htmlFor="audio">{t('Generate audio')}</label><p>{t('สร้างเสียงประกอบไปพร้อมกับวิดีโอ')}</p></div><input id="audio" className="switch" type="checkbox" checked={form.generate_audio} onChange={e => update('generate_audio', e.target.checked)}/></div>
@@ -449,7 +494,7 @@ function AppContent() {
   </TryItPage> : <IndexPage endpointGroups={endpointGroups} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} activeEndpoint={activeEndpoint} selectEndpoint={selectEndpoint} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} theme={theme} setTheme={setTheme} isHome={isHome || Boolean(category)}>
     {isHome ? <HomePage endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint} onOpenCategory={openCategory}/> : category ? <CategoryPage category={category} endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint}/> : <>
     <main className={`catalog-content ${activeEndpoint.botnoiId || ['Create Seedance 2.5 video', 'Get Seedance 2.5 result'].includes(activeEndpoint.name) || endpointDocs[activeEndpoint.name] || wavespeedModels[activeEndpoint.name] ? 'has-endpoint-docs' : ''}`}>
-      {activeEndpoint.botnoiId ? <BotnoiEndpointPage endpoint={botnoiEndpoints[activeEndpoint.botnoiId]} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={supportsTryIt(activeEndpoint) ? openTryIt : null}/> : activeEndpoint.name === 'Create Seedance 2.5 video' ? <article className="endpoint-docs">
+      {activeEndpoint.botnoiId ? <BotnoiEndpointPage endpoint={botnoiEndpoints[activeEndpoint.botnoiId]} displayTitle={activeEndpoint.name} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={supportsTryIt(activeEndpoint) ? openTryIt : null}/> : activeEndpoint.name === 'Create Seedance 2.5 video' ? <article className="endpoint-docs">
         <div className="endpoint-docs-title-row"><h1>{t('Create Seedance 2.5 video')}</h1><button className="markdown-copy-button" onClick={copyMarkdown}><Icon name="copy" width="15" height="15"/>{t(markdownCopied ? 'Copied!' : 'Copy as Markdown')}</button></div>
         <p className="endpoint-docs-description">{t('โมเดลสร้างวิดีโอคุณภาพสูง (Flagship) รองรับ Text-to-Video, Image-to-Video (First & Last frame) และ Reference Media')}</p>
         <section className="endpoint-docs-section endpoint-route-section"><h2>{t('Endpoint')}</h2><EndpointRoute method="POST" url={`${BOTNOI_API_BASE_URL}/api/genai/wavespeed/bytedance/seedance-2.5/text-to-video`}/></section>

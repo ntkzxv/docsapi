@@ -5,6 +5,7 @@ import { useNotification } from '../../components/NotificationProvider'
 import type { EndpointDoc, RequestPreview } from '../../types/app'
 import type { Seedance20Request } from '../../services/seedance20'
 import { useLanguage } from '../../functions/LanguageProvider'
+import PromptFooter from '../../components/PromptFooter'
 
 export function Choice({ label, value, options, onChange }: { label: string; value: string; options: [string, ReactNode, boolean?][]; onChange: (value: string) => void }) {
   const { t } = useLanguage()
@@ -99,7 +100,7 @@ export function WaveSpeedModelForm({ doc, onPreview }: { doc: EndpointDoc & { fo
         {field.kind === 'select' ? <Choice label={field.label} value={String(values[field.name] ?? '')} options={(field.options ?? []).map((option): [string, string] => [option, option || t('Auto from image')])} onChange={value => updateValue(field.name, value)}/>
           : field.kind === 'boolean' ? <div className="audio-row"><div><label htmlFor={`model-${field.name}`}>{t(field.label)}</label></div><input id={`model-${field.name}`} className="switch" type="checkbox" checked={Boolean(values[field.name])} onChange={event => updateValue(field.name, event.target.checked)}/></div>
             : <><label className="prompt-label" htmlFor={`model-${field.name}`}>{t(field.label)} {required && <span className="required">*</span>}{field.optional && <span className="optional-tag">{t('Optional')}</span>}</label><div className="prompt-input">{field.kind === 'textarea' || field.kind === 'json'
-              ? <textarea id={`model-${field.name}`} required={required} value={String(values[field.name] ?? '')} onChange={event => updateValue(field.name, event.target.value)} placeholder={t(field.placeholder || '')} rows={field.kind === 'json' ? 3 : 4}/>
+              ? <><textarea id={`model-${field.name}`} required={required} value={String(values[field.name] ?? '')} onChange={event => updateValue(field.name, event.target.value)} placeholder={t(field.placeholder || '')} rows={field.kind === 'json' ? 3 : 4}/>{field.name === 'prompt' && <PromptFooter value={String(values[field.name] ?? '')} model={doc.title} onChange={prompt => updateValue(field.name, prompt)}/>}</>
               : <input id={`model-${field.name}`} type={field.kind === 'number' ? 'number' : 'text'} required={required} min={field.min} max={field.max} step={field.step || (field.kind === 'number' ? '1' : undefined)} value={String(values[field.name] ?? '')} onChange={event => updateValue(field.name, event.target.value)} placeholder={t(field.placeholder || '')}/>}</div></>}
       </div>
     })}
@@ -134,7 +135,7 @@ export function InfiniteTalkForm({ onGenerate, generationStatus }: { onGenerate:
     <div className="avatar-files">{fileField('image_file', image, setImage, 'image/jpeg,image/png,.jpg,.jpeg,.png', 'Avatar image', 'JPG or PNG')} {fileField('audio_file', audio, setAudio, 'audio/mpeg,audio/wav,audio/x-wav,.mp3,.wav', 'Speech audio', 'MP3 or WAV')}</div>
     <Choice label="Resolution" value={resolution} options={[[ '480p', '480p' ], [ '720p', '720p' ]]} onChange={setResolution}/>
     <label className="prompt-label avatar-prompt-label" htmlFor="avatar-prompt">{t('Prompt')} <span className="optional-tag">{t('Optional')}</span></label>
-    <div className="prompt-input"><textarea id="avatar-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('เพิ่มรายละเอียดลักษณะ Avatar หรือการเคลื่อนไหว…')} rows={4}/><div className="prompt-footer"><span>{t('กำหนดลักษณะเพิ่มเติม')}</span><span>{prompt.length} {t('characters')}</span></div></div>
+    <div className="prompt-input"><textarea id="avatar-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('เพิ่มรายละเอียดลักษณะ Avatar หรือการเคลื่อนไหว…')} rows={4}/><PromptFooter value={prompt} model="InfiniteTalk avatar" onChange={setPrompt} disabled={generationStatus === 'submitting' || generationStatus === 'processing'}/></div>
     {error && <p className="error" role="alert">{t(error)}</p>}
     <div className="form-action"><button className="primary-button" type="submit" disabled={generationStatus === 'submitting' || generationStatus === 'processing'}>{generationStatus === 'submitting' ? t('Submitting…') : generationStatus === 'processing' ? <>{t('Generating video')}<span className="loading-dots" aria-hidden="true" /></> : t('Generate video')}</button></div>
   </form>
@@ -158,7 +159,7 @@ export function SeeDreamForm({ onGenerate, generationStatus }: { onGenerate: (da
   return <form className="avatar-form seedream-form" onSubmit={submit}>
     <div>
       <label className="prompt-label" htmlFor="seedream-prompt">{t('Prompt')} <span className="required">*</span></label>
-      <div className="prompt-input"><textarea id="seedream-prompt" required value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('อธิบายภาพที่ต้องการสร้าง…')} rows={4}/><div className="prompt-footer"><span>{t('ระบุสิ่งที่ต้องการให้อยู่ในภาพ')}</span><span>{prompt.length} {t('characters')}</span></div></div>
+      <div className="prompt-input"><textarea id="seedream-prompt" required value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('อธิบายภาพที่ต้องการสร้าง…')} rows={4}/><PromptFooter value={prompt} model="SeeDream image" onChange={setPrompt} disabled={generationStatus === 'submitting' || generationStatus === 'processing'}/></div>
     </div>
     <Choice label="Model" value={model} options={[[ 'seedream-4-5-251128', 'SeeDream 4.5' ]]} onChange={setModel}/>
     <div className="settings-row seedream-settings-row">
@@ -193,7 +194,7 @@ export function Seedance20Form({ onGenerate, generationStatus }: { onGenerate: (
   return <form className="avatar-form seedance20-form" onSubmit={submit}>
     <div>
       <label className="prompt-label" htmlFor="seedance20-prompt">{t('Prompt')} <span className="required">*</span></label>
-      <div className="prompt-input"><textarea id="seedance20-prompt" required value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('อธิบายวิดีโอและการเคลื่อนไหวที่ต้องการ…')} rows={4}/><div className="prompt-footer"><span>{t('ระบุฉากและการเคลื่อนไหวในวิดีโอ')}</span><span>{prompt.length} {t('characters')}</span></div></div>
+      <div className="prompt-input"><textarea id="seedance20-prompt" required value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('อธิบายวิดีโอและการเคลื่อนไหวที่ต้องการ…')} rows={4}/><PromptFooter value={prompt} model="Seedance video" onChange={setPrompt} disabled={generationStatus === 'submitting' || generationStatus === 'processing'}/></div>
     </div>
     <Choice label="Mode" value={mode} options={[[ 'text-to-video', 'Text-to-Video' ], [ 'image-to-video', 'Image-to-Video' ]]} onChange={value => { setMode(value); setError('') }}/>
     <Choice label="Model" value={model} options={[[ 'dreamina-seedance-2-0-260128', 'Seedance 2.0' ], [ 'dreamina-seedance-2-0-mini-260615', <>{t('Seedance 2.0 Mini')} <span className="optional-tag">{t('Disabled')}</span></>, true]]} onChange={setModel}/>
@@ -255,7 +256,7 @@ export function OmniHumanForm({ onGenerate, generationStatus }: { onGenerate: (d
       {fileDrop('omnihuman-image', image, setImage, 'image/*', 'Avatar image', 'ภาพต้นฉบับของ Avatar')}
       <div className="motion-video-field"><div className="motion-video-heading"><span className="prompt-label">{t('Speech audio')} <span className="required">*</span></span><div className="source-toggle"><button type="button" className={audioSource === 'file' ? 'selected' : ''} onClick={() => { setAudioSource('file'); setError('') }}>{t('File')}</button><button type="button" className={audioSource === 'url' ? 'selected' : ''} onClick={() => { setAudioSource('url'); setError('') }}>URL</button></div></div>{audioSource === 'file' ? <label className={`avatar-dropzone seedream-dropzone ${audio ? 'has-file' : ''}`} htmlFor="omnihuman-audio"><span className="avatar-upload-icon"><Icon name="upload"/></span><strong>{audio ? audio.name : t('อัปโหลดไฟล์เสียง')}</strong><span>{audio ? `${(audio.size / (1024 * 1024)).toFixed(2)} MB` : t('MP3 หรือ WAV')}</span><input id="omnihuman-audio" type="file" accept="audio/mpeg,audio/wav,audio/x-wav,.mp3,.wav" onChange={event => setAudio(event.target.files?.[0] ?? null)}/></label> : <div className="prompt-input url-input"><input aria-label={t('Audio URL')} type="url" value={audioUrl} onChange={event => setAudioUrl(event.target.value)} placeholder="https://example.com/speech.mp3"/></div>}</div>
     </div>
-    <div><label className="prompt-label" htmlFor="omnihuman-prompt">{t('Prompt')} <span className="optional-tag">{t('Optional')}</span></label><div className="prompt-input"><textarea id="omnihuman-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('อธิบายสไตล์หรือสีหน้าที่ต้องการ…')} rows={4}/></div></div>
+    <div><label className="prompt-label" htmlFor="omnihuman-prompt">{t('Prompt')} <span className="optional-tag">{t('Optional')}</span></label><div className="prompt-input"><textarea id="omnihuman-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('อธิบายสไตล์หรือสีหน้าที่ต้องการ…')} rows={4}/><PromptFooter value={prompt} model="OmniHuman avatar" onChange={setPrompt} disabled={generationStatus === 'submitting' || generationStatus === 'processing'}/></div></div>
     {error && <p className="error" role="alert">{t(error)}</p>}
     <div className="form-action"><button className="primary-button" type="submit" disabled={generationStatus === 'submitting' || generationStatus === 'processing'}>{generationStatus === 'submitting' ? t('Submitting…') : generationStatus === 'processing' ? <>{t('Generating video')}<span className="loading-dots" aria-hidden="true" /></> : t('Generate video')}</button></div>
   </form>
@@ -285,7 +286,7 @@ export function DreamActorForm({ onGenerate, generationStatus }: { onGenerate: (
   </div>
   return <form className="avatar-form motion-form" onSubmit={submit}>
     <div className="motion-upload-grid">{fileInput('dreamactor-image', image, setImage, 'image/*', 'Presenter image', 'ภาพต้นฉบับของ Presenter')}{fileInput('dreamactor-audio', audio, setAudio, 'audio/mpeg,audio/wav,audio/x-wav,.mp3,.wav', 'Speech audio', 'ไฟล์เสียงพากย์ MP3 หรือ WAV')}</div>
-    <div><label className="prompt-label" htmlFor="dreamactor-prompt">{t('Prompt')} <span className="optional-tag">{t('Optional')}</span></label><div className="prompt-input"><textarea id="dreamactor-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('อธิบายสไตล์ของ Presenter…')} rows={4}/></div></div>
+    <div><label className="prompt-label" htmlFor="dreamactor-prompt">{t('Prompt')} <span className="optional-tag">{t('Optional')}</span></label><div className="prompt-input"><textarea id="dreamactor-prompt" value={prompt} onChange={event => setPrompt(event.target.value)} placeholder={t('อธิบายสไตล์ของ Presenter…')} rows={4}/><PromptFooter value={prompt} model="DreamActor avatar" onChange={setPrompt} disabled={generationStatus === 'submitting' || generationStatus === 'processing'}/></div></div>
     {error && <p className="error" role="alert">{t(error)}</p>}
     <div className="form-action"><button className="primary-button" type="submit" disabled={generationStatus === 'submitting' || generationStatus === 'processing'}>{generationStatus === 'submitting' ? t('Submitting…') : generationStatus === 'processing' ? <>{t('Generating video')}<span className="loading-dots" aria-hidden="true" /></> : t('Generate video')}</button></div>
   </form>

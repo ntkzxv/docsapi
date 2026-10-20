@@ -14,17 +14,18 @@ function Table({ columns, rows }: { columns: string[]; rows: ReactNode[][] }) {
 
 interface BotnoiEndpointPageProps {
   endpoint: BotnoiEndpoint | undefined
+  displayTitle?: string
   onTry: (() => void) | null
   markdownCopied: boolean
   onCopyMarkdown: () => void
 }
 
-export default function BotnoiEndpointPage({ endpoint, onTry, markdownCopied, onCopyMarkdown }: BotnoiEndpointPageProps) {
+export default function BotnoiEndpointPage({ endpoint, displayTitle, onTry, markdownCopied, onCopyMarkdown }: BotnoiEndpointPageProps) {
   const { t } = useLanguage()
   if (!endpoint) return null
 
   return <article className="endpoint-docs">
-    <div className="endpoint-docs-title-row"><h1>{t(endpoint.title)}</h1><button className="markdown-copy-button" onClick={onCopyMarkdown}><Icon name="copy" width="15" height="15"/>{t(markdownCopied ? 'Copied!' : 'Copy as Markdown')}</button></div>
+    <div className="endpoint-docs-title-row"><h1>{t(displayTitle ?? endpoint.title)}</h1><button className="markdown-copy-button" onClick={onCopyMarkdown}><Icon name="copy" width="15" height="15"/>{t(markdownCopied ? 'Copied!' : 'Copy as Markdown')}</button></div>
     {endpoint.description && <p className="endpoint-docs-description">{t(endpoint.description)}</p>}
     {endpoint.method === 'POST' && onTry && <aside className="endpoint-try-group"><div><h2>{t('ทดลองใช้ endpoint นี้')}</h2><p>{t('ส่งคำขอไปยัง Botnoi API จริง งานสร้างสื่ออาจหัก coin หรือ credit ตามเงื่อนไขของ API')}</p></div><button className="endpoint-launch-button" onClick={onTry}><span>Try it on <strong>Botnoi</strong></span><Icon name="arrow" width="17" height="17"/></button></aside>}
     <section className="endpoint-docs-section"><h2>{t('Endpoint')}</h2><EndpointRoute method={endpoint.method} url={`${BOTNOI_API_BASE_URL}${endpoint.path}`}/></section>

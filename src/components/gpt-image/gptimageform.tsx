@@ -5,6 +5,7 @@ import GPTImageSelect from './gptimageselect'
 import { useNotification } from '../NotificationProvider'
 import type { RequestPreview } from '../../types/app'
 import { useLanguage } from '../../functions/LanguageProvider'
+import PromptFooter from '../PromptFooter'
 
 const initialForm = {
     prompt: '',
@@ -194,12 +195,11 @@ export default function GPTImageForm({ onPreview, onResetPreview, resetSignal }:
                     />
 
 
-                    <div className="prompt-footer">
-                        <span>
-                            {t('อธิบายรายละเอียดเพื่อให้ได้ภาพตามที่ต้องการ')}
-                        </span>
-                        <span>{form.prompt.length} {t('characters')}</span>
-                    </div>
+                    <PromptFooter
+                        value={form.prompt}
+                        model={mode === 'image-edit' ? 'gpt-image-edit' : 'gpt-image'}
+                        onChange={prompt => update('prompt', prompt)}
+                    />
                 </div>
             </div>
 

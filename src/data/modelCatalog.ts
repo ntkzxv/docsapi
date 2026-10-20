@@ -20,7 +20,7 @@ function categoryFor(groupName: string, name: string): ModelCategory {
 
 function titleFor(item: EndpointItem) {
   if (item.kind === 'model') return item.name
-  if (item.name === 'Edit image with prompt') return 'GPT Image Edit'
+  if (item.name === 'GPT Edit image with prompt') return 'GPT Image Edit'
   let title = item.name.replace(/^Create\s+/i, '').replace(/\s+(video|avatar|image)$/i, '')
   if (title === 'GPT Image (Text to Image)') title = 'GPT Image'
   if (title.startsWith('SeeDance ')) title = title.replace(/^SeeDance/, 'Seedance')

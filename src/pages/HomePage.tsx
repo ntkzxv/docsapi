@@ -27,7 +27,6 @@ export default function HomePage({ endpointGroups, onSelectEndpoint, onOpenCateg
         <p>{t('Explore image, video, and avatar APIs. Choose a model to read its docs or open a ready-to-use request form.')}</p>
         <div className="home-hero-actions">
           <EndpointSearch endpointGroups={endpointGroups} onSelectEndpoint={onSelectEndpoint} variant="home"/>
-          <span>{t('Search by model or task')}</span>
         </div>
       </div>
       <div className="home-hero-art" aria-hidden="true">

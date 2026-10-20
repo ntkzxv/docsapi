@@ -45,7 +45,7 @@ export const sidebarGroups: SidebarGroup[] = [
     label: 'GPT IMAGE STUDIO',
     items: [
       { id: 'gptimg-text2img',   label: 'Create GPT Image (Text to Image)', method: 'POST' },
-      { id: 'gptimg-edit',       label: 'Edit image with prompt',           method: 'POST' },
+      { id: 'gptimg-edit',       label: 'GPT Edit image with prompt',       method: 'POST' },
       { id: 'gptimg-status',     label: 'Get GPT Image result',             method: 'GET'  },
     ],
   },
