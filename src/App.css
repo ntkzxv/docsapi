@@ -118,9 +118,14 @@ button{cursor:pointer}button:disabled{cursor:wait;opacity:.55}button,input,texta
 .home-hero-copy>p{max-width:530px;color:#9aa1ac;font-size:14px;line-height:1.8}
 .home-hero-actions{margin-top:27px;display:flex;align-items:center;gap:19px;flex-wrap:wrap}
 .home-search{position:relative;flex:1 1 360px;width:min(420px,100%);max-width:420px}
-.home-search .model-search-field{height:44px;border-color:#3c4149;border-radius:7px;background:#17191d;color:#9ba5b3}
-.home-search .model-search-field:focus-within{border-color:#4388e8;box-shadow:0 0 0 3px #2778e51c}
+.home-search .model-search-field{height:44px;border-color:#3b3b3b;border-radius:8px;background:#171717;color:#a6a6a6}
+.home-search .model-search-field:focus-within{border-color:#777;box-shadow:0 0 0 3px #ffffff12}
 .home-search .model-search-field input{font-size:12px}
+.home-search .model-search-field input{color:#ededed}
+.home-search .model-search-field input::placeholder{color:#858585}
+.home-search .model-search-results{border-color:#383838;background:#141414;box-shadow:0 14px 34px #0009}
+.home-search .model-search-result:hover,.home-search .model-search-result:focus-visible,.home-search .model-search-result.is-highlighted{background:#292929}
+.home-search .model-search-result mark{color:#ededed}
 .home-hero-actions>span{color:#7e8794;font-size:10px}
 .home-hero-art{position:relative;width:min(100%,410px);aspect-ratio:1.24;justify-self:center;display:grid;place-items:center;overflow:hidden}
 .home-hero-art:before,.home-hero-art:after{content:'';position:absolute;inset:0;background-image:radial-gradient(#434953 1px,transparent 1px);background-size:19px 19px;mask-image:radial-gradient(ellipse at center,#000 5%,transparent 69%);opacity:.36}
@@ -138,14 +143,15 @@ button{cursor:pointer}button:disabled{cursor:wait;opacity:.55}button,input,texta
 .home-section-heading p{margin-top:5px;color:#848c98;font-size:11px;line-height:1.6}
 .home-section-heading>span{padding-bottom:2px;color:#77818e;font-size:10px}
 .home-capability-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.home-capability-card{min-height:152px;padding:17px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid #303238;border-radius:8px;background:#151619;color:var(--text);transition:border-color .15s,background .15s}
-.home-capability-card:hover{border-color:#4b668c;background:#191d23}
-.home-card-icon{width:34px;height:34px;display:grid;place-items:center;border:1px solid #343b46;border-radius:8px;background:#1c222b;color:#85b5ff}
-.home-capability-2 .home-card-icon{color:#c6aaff;background:#211e29;border-color:#3c3548}.home-capability-3 .home-card-icon{color:#9dd6c0;background:#1c2623;border-color:#34433d}
+.home-capability-card{min-height:152px;padding:17px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid #353535;border-radius:8px;background:#181818;color:var(--text);transition:border-color .15s,background .15s}
+.home-capability-card:hover{border-color:#5a5a5a;background:#222}
+.home-capability-card:focus-visible{outline:2px solid #aaa;outline-offset:3px}
+.home-card-icon{width:34px;height:34px;display:grid;place-items:center;border:1px solid #414141;border-radius:8px;background:#232323;color:#c3c3c3}
+.home-capability-2 .home-card-icon,.home-capability-3 .home-card-icon{color:#c3c3c3;background:#232323;border-color:#414141}
 .home-card-copy{margin-top:14px;display:flex;flex-direction:column;gap:5px}
-.home-card-copy strong{color:#e6e9ee;font-size:12px;font-weight:600}
-.home-card-copy>span{max-width:280px;color:#8d95a1;font-size:10px;line-height:1.55}
-.home-card-link{align-self:flex-end;margin-top:-16px;display:flex;align-items:center;gap:7px;color:#85b5ff;font-size:10px;font-weight:550}
+.home-card-copy strong{color:#edf2fa;font-size:12px;font-weight:600}
+.home-card-copy>span{max-width:280px;color:#a1adbd;font-size:10px;line-height:1.55}
+.home-card-link{align-self:flex-end;margin-top:-16px;display:flex;align-items:center;gap:7px;color:#c5c5c5;font-size:10px;font-weight:550}
 .home-card-link svg{transition:transform .15s}.home-capability-card:hover .home-card-link svg,.home-group-row:hover>svg{transform:translateX(3px)}
 .home-endpoint-section{padding-bottom:28px}
 .home-groups-list{display:grid;grid-template-columns:1fr 1fr;column-gap:36px}
@@ -158,6 +164,8 @@ button{cursor:pointer}button:disabled{cursor:wait;opacity:.55}button,input,texta
 .home-footer i{width:4px;height:4px;border-radius:50%;background:#3988ff}
 .light-mode .home-page{--home-line:#e1e4e8}.light-mode .home-hero h1{color:#202733}.light-mode .home-hero-copy>p,.light-mode .home-section-heading p,.light-mode .home-card-copy>span{color:#687382}
 .light-mode .home-search .model-search-field{border-color:#cbd3df;background:#fff;color:#667080}.light-mode .home-capability-card{border-color:#d9dde3;background:#f8f9fb}.light-mode .home-capability-card:hover{border-color:#97b6df;background:#f0f5fc}
+.light-mode .home-search .model-search-field input{color:#202733}.light-mode .home-search .model-search-field input::placeholder{color:#788393}.light-mode .home-search .model-search-results{border-color:#d6dbe2;background:#fff;box-shadow:0 12px 30px #16203320}.light-mode .home-search .model-search-result{color:#202733}.light-mode .home-search .model-search-result:hover,.light-mode .home-search .model-search-result:focus-visible,.light-mode .home-search .model-search-result.is-highlighted{background:#f1f4f8}
+.light-mode .home-search .model-search-result mark{color:#1459a6}
 .light-mode .home-section-heading h2,.light-mode .home-card-copy strong{color:#27313d}.light-mode .home-group-row{border-color:#e4e7eb;color:#35404d}.light-mode .home-group-count,.light-mode .home-footer{color:#778293}
 .light-mode .home-node{border-color:#d9e0e9;background:#fff;color:#3474c7;box-shadow:0 6px 20px #17203316}.light-mode .home-core{border-color:#bed2ef;background:linear-gradient(145deg,#e5eefb,#fff);box-shadow:0 0 0 12px #347ce10a,0 18px 55px #17203314}.light-mode .home-core img{filter:brightness(0) saturate(100%) invert(40%) sepia(96%) saturate(1850%) hue-rotate(198deg) brightness(98%) contrast(95%)}
 .light-mode .home-orbit{border-color:#25344a12}.light-mode .home-hero-art:before{opacity:.22}.light-mode .home-orbit-caption{color:#7a8694}
