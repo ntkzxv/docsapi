@@ -1,9 +1,18 @@
+<<<<<<< HEAD
 import { type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import botnoiLogo from '../assets/botnoi_logo.png'
 import BotnoiAuthButton from '../components/BotnoiAuthButton'
 import EndpointSearch from '../components/EndpointSearch'
 import { useLanguage } from '../functions/LanguageProvider'
 import { type EndpointGroup, type EndpointItem } from '../types/app'
+=======
+import type { Dispatch, ReactNode, SetStateAction } from 'react'
+import BotnoiAuthButton from '../components/BotnoiAuthButton'
+import EndpointSearch from '../components/EndpointSearch'
+import botnoiLogo from '../assets/botnoi_logo.png'
+import type { EndpointGroup, EndpointItem } from '../types/app'
+import { useLanguage } from '../functions/LanguageProvider'
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
 
 interface IndexPageProps {
   endpointGroups: EndpointGroup[]
@@ -22,6 +31,14 @@ interface IndexPageProps {
 }
 
 export default function IndexPage({ endpointGroups, expandedGroups, setExpandedGroups, activeEndpoint, selectEndpoint, sidebarOpen, setSidebarOpen, theme, setTheme, isHome, isApiKeyPage, onOpenApiKeyPage, children }: IndexPageProps) {
+<<<<<<< HEAD
+=======
+
+  children: ReactNode
+}
+
+export default function IndexPage({ endpointGroups, expandedGroups, setExpandedGroups, activeEndpoint, selectEndpoint, sidebarOpen, setSidebarOpen, theme, setTheme, isHome, children }: IndexPageProps) {
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
   const { t } = useLanguage()
 
   return <>
@@ -39,6 +56,7 @@ export default function IndexPage({ endpointGroups, expandedGroups, setExpandedG
           <span>{t('API Key')}</span>
         </button>
         {endpointGroups.map(group => <section className="sidebar-group" key={group.name}>
+<<<<<<< HEAD
           <button className="sidebar-group-title" aria-expanded={expandedGroups[group.name]} onClick={() => setExpandedGroups(current => ({ ...current, [group.name]: !current[group.name] }))}><span>{t(group.name)}</span><span className={`group-chevron ${expandedGroups[group.name] ? '' : 'collapsed'}`}>⌄</span></button>
           {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} className={`endpoint-tab ${!isHome && activeEndpoint.name === item.name ? 'active' : ''}`} disabled={item.kind === 'model'} onClick={() => { if (item.kind !== 'model') selectEndpoint(item) }}><span className={`sidebar-method ${item.kind === 'model' ? 'model' : item.method.toLowerCase()}`}>{item.kind === 'model' ? 'WAIT' : item.method}</span><span className="sidebar-endpoint-name">{t(item.name)}</span></button>)}</div>}
         </section>)}
@@ -51,6 +69,22 @@ export default function IndexPage({ endpointGroups, expandedGroups, setExpandedG
         <div className="topbar-actions catalog-topbar-actions">
           <EndpointSearch endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint}/>
           <BotnoiAuthButton theme={theme} onToggleTheme={() => setTheme(current => current === 'dark' ? 'light' : 'dark')} />
+=======
+        <button className="sidebar-group-title" aria-expanded={expandedGroups[group.name]} onClick={() => setExpandedGroups(current => ({ ...current, [group.name]: !current[group.name] }))}><span>{t(group.name)}</span><span className={`group-chevron ${expandedGroups[group.name] ? '' : 'collapsed'}`}>⌄</span></button>
+        {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} className={`endpoint-tab ${!isHome && activeEndpoint.name === item.name ? 'active' : ''}`} disabled={item.kind === 'model'} onClick={() => { if (item.kind !== 'model') selectEndpoint(item) }}><span className={`sidebar-method ${item.kind === 'model' ? 'model' : item.method.toLowerCase()}`}>{item.kind === 'model' ? 'WAIT' : item.method}</span><span className="sidebar-endpoint-name">{t(item.name)}</span></button>)}</div>}
+      </section>)}
+      </nav>
+      <nav aria-label={t('API endpoint navigation')}>{endpointGroups.map(group => <section className="sidebar-group" key={group.name}>
+        <button className="sidebar-group-title" aria-expanded={expandedGroups[group.name]} onClick={() => setExpandedGroups(current => ({ ...current, [group.name]: !current[group.name] }))}><span>{t(group.name)}</span><span className={`group-chevron ${expandedGroups[group.name] ? '' : 'collapsed'}`}>⌄</span></button>
+        {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} className={`endpoint-tab ${!isHome && activeEndpoint.name === item.name ? 'active' : ''}`} disabled={item.kind === 'model'} onClick={() => { if (item.kind !== 'model') selectEndpoint(item) }}><span className={`sidebar-method ${item.kind === 'model' ? 'model' : item.method.toLowerCase()}`}>{item.kind === 'model' ? 'WAIT' : item.method}</span><span className="sidebar-endpoint-name">{t(item.name)}</span></button>)}</div>}
+      </section>)}</nav>
+    </aside>
+    <div className="catalog-main">
+      <header className="catalog-topbar"><button className="sidebar-menu-button catalog-menu-button" aria-label={t('Open endpoint menu')} onClick={() => setSidebarOpen(true)}><span/><span/><span/></button><span>{t('API Endpoints')}</span>
+        <div className="topbar-actions catalog-topbar-actions">
+        <EndpointSearch endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint}/>
+        <BotnoiAuthButton theme={theme} onToggleTheme={() => setTheme(current => current === 'dark' ? 'light' : 'dark')} />
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
         </div>
       </header>
       {children}

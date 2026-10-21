@@ -33,11 +33,50 @@ export function useBotnoiAuth(): AuthContextValue {
   if (!context) throw new Error('useBotnoiAuth must be used inside BotnoiAuthProvider')
   return context
 }
+<<<<<<< HEAD
 
 async function fetchProfile(token: string): Promise<{ profile: AuthProfile; apiKey: string | null } | null> {
   try {
     const response = await fetch(`/api/user`, {
       headers: { Authorization: `Bearer ${token}`, 'botnoi-token': token },
+=======
+async function fetchProfile(token: string): Promise<{ profile: AuthProfile; apiKey: string | null } | null> {
+  try {
+    const response = await fetch(`/api/user`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const json = await response.json()
+    const data = json.data ?? json
+    if (!data) return null
+    const email = data.email ?? ''
+    const name = data.name ?? data.username ?? data.username_id ?? email.split('@')[0] ?? ''
+    const rawUid = data.uid ?? data.user_id ?? data.userId ?? data.user_uid ?? data.uuid ?? data.id ?? data.username_id
+    const uid = typeof rawUid === 'string' || typeof rawUid === 'number' ? String(rawUid).trim() : ''
+    const rawAvatarUrl = data.image ?? data.avatar_url ?? data.profile_image_url ?? data.profile_image ?? data.profile_pic ?? data.profile_photo ?? data.picture_url ?? data.picture ?? data.avatar ?? data.image_url
+    const avatarUrl = typeof rawAvatarUrl === 'string' && rawAvatarUrl.trim() ? rawAvatarUrl.trim() : null
+    const rawPoints = data.current_point ?? data.point ?? data.points ?? data.credits
+    const points = typeof rawPoints === 'number' || (typeof rawPoints === 'string' && rawPoints.trim() !== '')
+      ? Number(rawPoints)
+      : null
+    const rawCoinVoicebot = data.coin_voicebot
+    const coinVoicebot = typeof rawCoinVoicebot === 'number' || (typeof rawCoinVoicebot === 'string' && rawCoinVoicebot.trim() !== '')
+      ? Number(rawCoinVoicebot)
+      : null
+    const rawApiKey = data.api_key ?? data.token ?? null
+    const apiKey = rawApiKey && typeof rawApiKey === 'string' ? rawApiKey : null
+    if (apiKey) localStorage.setItem(API_KEY_STORAGE, apiKey)
+    return {
+      profile: {
+        email,
+        name,
+        uid: uid || null,
+        avatarUrl,
+        points: points !== null && Number.isFinite(points) ? points : null,
+        coinVoicebot: coinVoicebot !== null && Number.isFinite(coinVoicebot) ? coinVoicebot : null,
+      },
+      apiKey,
+      headers: { Authorization: `Bearer ${token}` },
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
     })
     if (!response.ok) return null
     const json = await response.json()
@@ -45,6 +84,13 @@ async function fetchProfile(token: string): Promise<{ profile: AuthProfile; apiK
     if (!data) return null
     const email = data.email ?? ''
     const name = data.name ?? data.username ?? data.username_id ?? email.split('@')[0] ?? ''
+<<<<<<< HEAD
+=======
+    const data = json.data
+    if (!data) return null
+    const email = data.email ?? ''
+    const name = data.username ?? data.username_id ?? email.split('@')[0] ?? ''
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
     const rawUid = data.uid ?? data.user_id ?? data.userId ?? data.user_uid ?? data.uuid ?? data.id ?? data.username_id
     const uid = typeof rawUid === 'string' || typeof rawUid === 'number' ? String(rawUid).trim() : ''
     const rawAvatarUrl = data.image ?? data.avatar_url ?? data.profile_image_url ?? data.profile_image ?? data.profile_pic ?? data.profile_photo ?? data.picture_url ?? data.picture ?? data.avatar ?? data.image_url
@@ -77,6 +123,18 @@ async function fetchProfile(token: string): Promise<{ profile: AuthProfile; apiK
 }
 
 export function BotnoiAuthProvider({ children }: { children: ReactNode }) {
+<<<<<<< HEAD
+=======
+      points: points !== null && Number.isFinite(points) ? points : null,
+      coinVoicebot: coinVoicebot !== null && Number.isFinite(coinVoicebot) ? coinVoicebot : null,
+    }
+  } catch {
+    return null
+  }
+}
+
+export function BotnoiAuthProvider({ children }: { children: ReactNode }) {
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
   const [signedIn, setSignedIn] = useState(() => Boolean(localStorage.getItem(TOKEN_KEY)))
   const [profile, setProfile] = useState<AuthProfile | null>(null)
   const [profileLoading, setProfileLoading] = useState(() => Boolean(localStorage.getItem(TOKEN_KEY)))
@@ -93,6 +151,11 @@ export function BotnoiAuthProvider({ children }: { children: ReactNode }) {
         setProfile(result.profile)
         setApiKey(result.apiKey)
       }
+<<<<<<< HEAD
+=======
+      const refreshedProfile = await fetchProfile(token)
+      if (refreshedProfile) setProfile(refreshedProfile)
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
     } finally {
       setProfileLoading(false)
     }
@@ -100,7 +163,14 @@ export function BotnoiAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedToken = localStorage.getItem(TOKEN_KEY)
+<<<<<<< HEAD
     if (savedToken) fetchProfile(savedToken).then(r => { if (r) { setProfile(r.profile); setApiKey(r.apiKey) } }).finally(() => setProfileLoading(false))
+=======
+
+    if (savedToken) fetchProfile(savedToken).then(r => { if (r) { setProfile(r.profile); setApiKey(r.apiKey) } }).finally(() => setProfileLoading(false))
+    if (savedToken) fetchProfile(savedToken).then(setProfile).finally(() => setProfileLoading(false))
+
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
 
     const onMessage = (event: MessageEvent<{ type?: string; token?: unknown }>) => {
       if (event.origin !== new URL(BOTNOI_LOGIN_URL).origin) return
@@ -112,6 +182,10 @@ export function BotnoiAuthProvider({ children }: { children: ReactNode }) {
       setSignedIn(true)
       setProfileLoading(true)
       fetchProfile(token).then(r => { if (r) { setProfile(r.profile); setApiKey(r.apiKey) } }).finally(() => setProfileLoading(false))
+<<<<<<< HEAD
+=======
+      fetchProfile(token).then(setProfile).finally(() => setProfileLoading(false))
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
       popupRef.current?.close()
       popupRef.current = null
     }
@@ -150,6 +224,17 @@ export function BotnoiAuthProvider({ children }: { children: ReactNode }) {
     setApiKey(key)
   }
   return <AuthContext.Provider value={{ signedIn, profile, profileLoading, apiKey, setApiKey: updateApiKey, refreshProfile, openLoginPopup, signOut }}>{children}</AuthContext.Provider>
+<<<<<<< HEAD
+=======
+=======
+    setSignedIn(false)
+    setProfile(null)
+    setProfileLoading(false)
+  }
+
+  return <AuthContext.Provider value={{ signedIn, profile, profileLoading, refreshProfile, openLoginPopup, signOut }}>{children}</AuthContext.Provider>
+>>>>>>> 12fbad8141a878b1e089dd926914e09ef843d409
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
 }
 
 export default function BotnoiAuthButton({ theme, onToggleTheme }: { theme: 'dark' | 'light'; onToggleTheme: () => void }) {
@@ -159,7 +244,10 @@ export default function BotnoiAuthButton({ theme, onToggleTheme }: { theme: 'dar
   const [menuMounted, setMenuMounted] = useState(false)
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null)
   const [uidCopied, setUidCopied] = useState(false)
+<<<<<<< HEAD
 
+=======
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
   const menuRef = useRef<HTMLDivElement>(null)
   const closeTimer = useRef<number | null>(null)
 
@@ -231,7 +319,10 @@ export default function BotnoiAuthButton({ theme, onToggleTheme }: { theme: 'dar
                 <span className="auth-menu-uid" title={profile?.uid ? `UID: ${profile.uid}` : undefined}>UID: {profileLoading ? 'Loading…' : profile?.uid ?? 'Unavailable'}</span>
                 {profile?.uid && <button className="auth-menu-copy-uid" type="button" onClick={copyUid} aria-label={t(uidCopied ? 'UID copied' : 'Copy UID')} title={t(uidCopied ? 'Copied' : 'Copy UID')}><Icon name="copy" width="14" height="14"/></button>}
               </div>}
+<<<<<<< HEAD
 
+=======
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
             </div>
           </div>
           {signedIn ? <div className="auth-menu-balance-list" aria-label={t('Account balances')}>
@@ -281,4 +372,8 @@ export default function BotnoiAuthButton({ theme, onToggleTheme }: { theme: 'dar
       </div>}
     </div>
   </>
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08

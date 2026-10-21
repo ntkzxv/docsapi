@@ -4,11 +4,21 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+<<<<<<< HEAD
+=======
+
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:frontend\"",
     "dev:frontend": "vite",
     "dev:server": "tsx watch server.ts",
     "build": "tsc -b && vite build",
     "start": "NODE_ENV=production tsx server.ts",
+<<<<<<< HEAD
+=======
+
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -27,4 +37,8 @@
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> ec63dfe3bdc7f0427e4b5a1e1069e9bca382ea08
