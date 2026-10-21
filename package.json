@@ -4,11 +4,15 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:frontend\"",
     "dev:frontend": "vite",
     "dev:server": "tsx watch server.ts",
     "build": "tsc -b && vite build",
     "start": "NODE_ENV=production tsx server.ts",
+
+    "dev": "vite",
+    "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },

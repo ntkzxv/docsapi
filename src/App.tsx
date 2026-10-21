@@ -6,7 +6,10 @@ import ProviderLogo, { type ApiProvider } from './components/ProviderLogo'
 import PromptFooter from './components/PromptFooter'
 import ApiDocsFooter from './components/ApiDocsFooter'
 import IndexPage from './pages/IndexPage'
+
 import ApiKeyPage from './pages/ApiKeyPage'
+=======
+
 import HomePage from './pages/HomePage'
 import CategoryPage from './pages/CategoryPage'
 import TryItPage from './pages/TryItPage'
@@ -510,6 +513,9 @@ function AppContent() {
     </main>
   </TryItPage> : <IndexPage endpointGroups={endpointGroups} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} activeEndpoint={activeEndpoint} selectEndpoint={selectEndpoint} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} theme={theme} setTheme={setTheme} isHome={isHome || Boolean(category)} isApiKeyPage={isApiKeyPage} onOpenApiKeyPage={openApiKeyPage}>
     {isHome ? <HomePage endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint} onOpenCategory={openCategory}/> : category ? <CategoryPage category={category} endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint}/> : isApiKeyPage ? <ApiKeyPage /> : <>
+
+  </TryItPage> : <IndexPage endpointGroups={endpointGroups} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} activeEndpoint={activeEndpoint} selectEndpoint={selectEndpoint} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} theme={theme} setTheme={setTheme} isHome={isHome || Boolean(category)}>
+    {isHome ? <HomePage endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint} onOpenCategory={openCategory}/> : category ? <CategoryPage category={category} endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint}/> : <>
     <main className={`catalog-content ${activeEndpoint.botnoiId || ['Create Seedance 2.5 video', 'Get Seedance 2.5 result'].includes(activeEndpoint.name) || endpointDocs[activeEndpoint.name] || wavespeedModels[activeEndpoint.name] ? 'has-endpoint-docs' : ''}`}>
       {activeEndpoint.botnoiId ? <BotnoiEndpointPage endpoint={botnoiEndpoints[activeEndpoint.botnoiId]} displayTitle={activeEndpoint.name} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={supportsTryIt(activeEndpoint) ? openTryIt : null}/> : activeEndpoint.name === 'Create Seedance 2.5 video' ? <article className="endpoint-docs">
         <div className="endpoint-docs-title-row"><h1>{t('Create Seedance 2.5 video')}</h1><button className="markdown-copy-button" onClick={copyMarkdown}><Icon name="copy" width="15" height="15"/>{t(markdownCopied ? 'Copied!' : 'Copy as Markdown')}</button></div>

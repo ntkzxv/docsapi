@@ -382,9 +382,6 @@ button{cursor:pointer}button:disabled{cursor:wait;opacity:.55}button,input,texta
 @media(prefers-reduced-motion:reduce){.endpoint-tab,.endpoint-tab:before{transition:none}}
 .custom-select-menu button.is-disabled{opacity:.5;cursor:not-allowed}
 .provider-logo{display:block;flex:0 0 auto;height:auto;object-fit:contain;filter:brightness(0) invert(1)}.provider-logo-wavespeed{width:38px;height:38px}.provider-logo-byteplus{width:38px;height:38px;box-sizing:border-box;padding:4px 5px;object-fit:contain}.light-mode .provider-logo{filter:none}
-
-
-/* ── API Key Page ─────────────────────────────────────────────── */
 .apikey-page{flex:1;display:flex;justify-content:center;padding:48px 24px 60px}
 .apikey-container{width:100%;max-width:640px}
 .apikey-title{font-size:20px;font-weight:700;color:#e8ecf3;margin:0 0 6px;letter-spacing:-.2px}
@@ -459,3 +456,5 @@ button{cursor:pointer}button:disabled{cursor:wait;opacity:.55}button,input,texta
 .light-mode .apikey-reset-link-btn{border-color:#d0d5dd;color:#4b5563}
 .light-mode .apikey-reset-link-btn:hover{border-color:#9aa5b4;background:#f3f4f6;color:#1f2937}
 @media(max-width:520px){.apikey-reset-section{flex-direction:column;align-items:flex-start}.apikey-reset-link-btn{width:100%;justify-content:center}}
+=======
+>>>>>>> 12fbad8141a878b1e089dd926914e09ef843d409

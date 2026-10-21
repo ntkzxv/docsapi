@@ -22,6 +22,11 @@ interface IndexPageProps {
 }
 
 export default function IndexPage({ endpointGroups, expandedGroups, setExpandedGroups, activeEndpoint, selectEndpoint, sidebarOpen, setSidebarOpen, theme, setTheme, isHome, isApiKeyPage, onOpenApiKeyPage, children }: IndexPageProps) {
+
+  children: ReactNode
+}
+
+export default function IndexPage({ endpointGroups, expandedGroups, setExpandedGroups, activeEndpoint, selectEndpoint, sidebarOpen, setSidebarOpen, theme, setTheme, isHome, children }: IndexPageProps) {
   const { t } = useLanguage()
 
   return <>
@@ -43,6 +48,10 @@ export default function IndexPage({ endpointGroups, expandedGroups, setExpandedG
         {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} className={`endpoint-tab ${!isHome && activeEndpoint.name === item.name ? 'active' : ''}`} disabled={item.kind === 'model'} onClick={() => { if (item.kind !== 'model') selectEndpoint(item) }}><span className={`sidebar-method ${item.kind === 'model' ? 'model' : item.method.toLowerCase()}`}>{item.kind === 'model' ? 'WAIT' : item.method}</span><span className="sidebar-endpoint-name">{t(item.name)}</span></button>)}</div>}
       </section>)}
       </nav>
+      <nav aria-label={t('API endpoint navigation')}>{endpointGroups.map(group => <section className="sidebar-group" key={group.name}>
+        <button className="sidebar-group-title" aria-expanded={expandedGroups[group.name]} onClick={() => setExpandedGroups(current => ({ ...current, [group.name]: !current[group.name] }))}><span>{t(group.name)}</span><span className={`group-chevron ${expandedGroups[group.name] ? '' : 'collapsed'}`}>⌄</span></button>
+        {expandedGroups[group.name] && <div>{group.items.map(item => <button key={item.name} className={`endpoint-tab ${!isHome && activeEndpoint.name === item.name ? 'active' : ''}`} disabled={item.kind === 'model'} onClick={() => { if (item.kind !== 'model') selectEndpoint(item) }}><span className={`sidebar-method ${item.kind === 'model' ? 'model' : item.method.toLowerCase()}`}>{item.kind === 'model' ? 'WAIT' : item.method}</span><span className="sidebar-endpoint-name">{t(item.name)}</span></button>)}</div>}
+      </section>)}</nav>
     </aside>
     <div className="catalog-main">
       <header className="catalog-topbar"><button className="sidebar-menu-button catalog-menu-button" aria-label={t('Open endpoint menu')} onClick={() => setSidebarOpen(true)}><span/><span/><span/></button><span>{t('API Endpoints')}</span>
