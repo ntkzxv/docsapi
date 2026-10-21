@@ -1,0 +1,2 @@
+- `wavespeed-logo.svg`: WaveSpeedAI official GitHub organization, https://github.com/WaveSpeedAI/wavespeed-n8n/blob/main/wavespeed-logo.svg
+- `byteplus-icon.svg`: BytePlus official CDN, https://sf-bpcms.bytepluscdn.com/obj/byteplus-assets/navigation/byteplus_logo_footer.svg; converted to monochrome black/white for theme-aware display.
