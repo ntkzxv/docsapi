@@ -1,0 +1,29 @@
+# Botnoi AI Gateway API
+
+Base URL: https://api-voice.botnoi.ai
+Auth: Bearer <_bn_token>
+OpenAPI: /openapi.json
+
+## VIDEO AI MODELS
+- POST /api/genai/wavespeed/bytedance/seedance-2.5/text-to-video — Create Seedance 2.5 video
+- GET  /api/genai/wavespeed/result/{id} — Get Seedance 2.5 result
+- POST /api/genai/byteplus/video-generation — Create SeeDance 2.0 video
+- GET  /api/genai/byteplus/video-generation/{task_id} — Get SeeDance 2.0 result
+- POST /api/genai/motion-control — Create Motion Control video
+- GET  /api/genai/get_id_wavspeed — Get Motion Control result
+
+## AVATAR LIP-SYNC
+- POST /api/genai/infinitetalk — Create InfiniteTalk avatar
+- GET  /api/genai/get_id_wavspeed — Get InfiniteTalk result
+- POST /api/genai/byteplus/avatar-video — Create OmniHuman avatar
+- GET  /api/genai/byteplus/avatar-video/{task_id} — Get OmniHuman result
+
+## IMAGE GENERATION
+- POST /api/genai/byteplus/image-generation — Create SeeDream 4.5 image
+- GET  /api/genai/byteplus/image-generation/status/{task_id} — Get SeeDream 4.5 result
+
+## GPT IMAGE STUDIO
+- POST /api/genai/wavespeed/gpt-image/text-to-image — Create GPT Image (Text to Image)
+- POST /api/genai/upload_image — Upload image for editing
+- POST /api/genai/wavespeed/gpt-image/edit — Edit image with prompt
+- GET  /api/genai/wavespeed/result/{id} — Get GPT Image result
