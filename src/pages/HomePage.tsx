@@ -9,6 +9,7 @@ interface HomePageProps {
   endpointGroups: EndpointGroup[]
   onSelectEndpoint: (item: EndpointItem) => void
   onOpenCategory: (category: ModelCategory) => void
+  onOpenApiKeyPage: () => void
 }
 
 const featured = [
@@ -17,8 +18,9 @@ const featured = [
   { category: 'talking-avatars' as const, label: 'Talking avatars', detail: 'Create a presenter from an image and voice track.', icon: 'video' as const },
 ]
 
-export default function HomePage({ endpointGroups, onSelectEndpoint, onOpenCategory }: HomePageProps) {
+export default function HomePage({ endpointGroups, onSelectEndpoint, onOpenCategory, onOpenApiKeyPage }: HomePageProps) {
   const { t } = useLanguage()
+  const accountEndpoint = endpointGroups.find(group => group.name === 'ACCOUNT & BALANCE')?.items[0]
 
   return <main className="home-page">
     <section className="home-hero">
@@ -36,6 +38,27 @@ export default function HomePage({ endpointGroups, onSelectEndpoint, onOpenCateg
         <span className="home-node home-node-image"><Icon name="image" width="17" height="17"/></span>
         <span className="home-node home-node-api"><Icon name="code" width="17" height="17"/></span>
         <span className="home-orbit-caption">BOTNOI / AI GATEWAY</span>
+      </div>
+    </section>
+
+    <section className="home-endpoint-directory" id="home-endpoints">
+      <div className="home-section-heading"><div><h2>{t('User account APIs')}</h2><p>{t('Manage your API key and view account balance fields.')}</p></div></div>
+      <div className="home-account-grid">
+        <button className="home-account-card" type="button" onClick={onOpenApiKeyPage}>
+          <span className="home-account-icon"><svg viewBox="0 0 20 20" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="7.5" cy="13" r="3.5"/><path d="M11 13h6M14 13v-2.5M16.5 13v-2"/></svg></span>
+          <span className="home-account-copy"><strong>{t('API Key')}</strong><span>{t('View, copy, or refresh your Botnoi API key.')}</span>
+            <span className="home-account-route"><span className="home-endpoint-method">{t('Account')}</span><code>botnoi-token</code></span>
+          </span>
+          <span className="home-account-action">{t('Open API Key')} <Icon name="arrow" width="16" height="16"/></span>
+        </button>
+        {accountEndpoint && <button className="home-account-card" onClick={() => onSelectEndpoint(accountEndpoint)}>
+          <span className="home-account-icon"><Icon name="code" width="21" height="21"/></span>
+          <span className="home-account-copy"><strong>{t('Token balance')}</strong><span>{t('Read account points and Voicebot coins with your Botnoi access token.')}</span>
+            <span className="home-account-route"><span className="home-endpoint-method home-endpoint-method-get">GET</span><code>{accountEndpoint.path}</code></span>
+            <span className="home-account-fields"><span>{t('Response fields')}</span><code>current_point</code><code>coin_voicebot</code></span>
+          </span>
+          <span className="home-account-action">{t('View account API')} <Icon name="arrow" width="16" height="16"/></span>
+        </button>}
       </div>
     </section>
 

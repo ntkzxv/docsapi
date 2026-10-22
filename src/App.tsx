@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import Icon from './components/Icon'
 import EndpointRoute from './components/EndpointRoute'
+import AuthTokenTable from './components/AuthTokenTable'
 import ProviderLogo, { type ApiProvider } from './components/ProviderLogo'
 import PromptFooter from './components/PromptFooter'
 import ApiDocsFooter from './components/ApiDocsFooter'
@@ -63,7 +64,7 @@ function EndpointDocsPage({ doc, markdownCopied, onCopyMarkdown, onTry }: { doc:
     {doc.scopeNote && !doc.hideAttribution && <p className="endpoint-scope-note">{t(doc.scopeNote)} · {t('Base URL')}: <code>https://api.wavespeed.ai</code></p>}
     {doc.sourceUrl && !doc.hideAttribution && <p className="endpoint-source">{t('อ้างอิง')} <a href={doc.sourceUrl} target="_blank" rel="noopener noreferrer">{t('เอกสาร WaveSpeedAI ↗')}</a></p>}
     {doc.method === 'POST' && onTry && <TryItCallout onTry={onTry} live={!doc.sourceUrl}/>}
-    <section className="endpoint-docs-section"><h2>{t('Auth')}</h2><p>{doc.sourceUrl ? <>{t('WaveSpeedAI API key')}: <code>Authorization: Bearer &lt;WAVESPEED_API_KEY&gt;</code></> : t('Authentication required.')}</p></section>
+    <section className="endpoint-docs-section"><h2>{t('Auth')}</h2><AuthTokenTable provider={doc.sourceUrl ? 'wavespeed' : 'botnoi'} method={doc.method}/></section>
     <section className="endpoint-docs-section"><h2>{t('Parameters')}</h2>{doc.parameters ? <div className="endpoint-table-wrap"><table><thead><tr><th>{t('Name')}</th><th>{t('In')}</th><th>{t('Required')}</th><th>{t('Type')}</th><th>{t('Description')}</th></tr></thead><tbody>{doc.parameters.map(([name, location, required, type, description]) => <tr key={name}><td><code>{name}</code></td><td>{t(location)}</td><td>{t(required)}</td><td>{t(type)}</td><td>{t(description)}</td></tr>)}</tbody></table></div> : <p>{t('No parameters.')}</p>}</section>
     <section className="endpoint-docs-section"><h2>{t('Request Body')}</h2>{doc.body ? <><div className="endpoint-table-wrap"><table><thead><tr><th>{t('Required')}</th><th>{t('Content-Type')}</th><th>{t('Shape')}</th></tr></thead><tbody><tr><td>{t('Yes')}</td><td><code>{doc.body.contentType}</code></td><td><code>{doc.body.shape}</code></td></tr></tbody></table></div><div className="endpoint-table-wrap"><table><thead><tr><th>{t('Name')}</th><th>{t('Type')}</th><th>{t('Required')}</th><th>{t('Description')}</th></tr></thead><tbody>{doc.body.fields.map(([name, type, required, description]) => <tr key={name}><td><code>{name}</code></td><td>{t(type)}</td><td>{t(required)}</td><td>{t(description)}</td></tr>)}</tbody></table></div></> : <p>{t('No request body.')}</p>}</section>
     <section className="endpoint-docs-section"><h2>{t('Responses')}</h2><div className="endpoint-table-wrap"><table><thead><tr><th>{t('Status')}</th><th>{t('Description')}</th><th>{t('Content-Type')}</th><th>{t('Shape')}</th></tr></thead><tbody>{doc.responses?.map(([status, description, shape]) => <tr key={status}><td><strong className={`response-status ${status === '200' ? 'success' : status === '401' ? 'unauthorized' : 'forbidden'}`}>{status}</strong></td><td>{t(description)}</td><td><code>application/json</code></td><td><code>{shape}</code></td></tr>)}</tbody></table></div></section>
@@ -92,7 +93,7 @@ function AppContent() {
   const [isApiKeyPage, setIsApiKeyPage] = useState(() => window.location.hash === '#/api-key')
   const [category, setCategory] = useState<ModelCategory | null>(categoryFromHash)
   const [isTryPage, setIsTryPage] = useState(() => window.location.hash.startsWith('#/try-it-now/') && supportsTryIt(endpointFromHash()))
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => Object.fromEntries(endpointGroups.map(group => [group.name, true])))
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => Object.fromEntries([...endpointGroups.map(group => [group.name, true] as const), ['ACCOUNT API', false] as const]))
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => localStorage.getItem('try-it-theme') === 'light' ? 'light' : 'dark')
   const [markdownCopied, setMarkdownCopied] = useState(false)
@@ -183,6 +184,18 @@ function AppContent() {
     setIsTryPage(false)
     setSidebarOpen(false)
   }
+  const goHome = () => {
+    if (!confirmGenerationExit()) return
+    resetGeneration()
+    const nextHash = '#/'
+    window.history.pushState({}, '', nextHash)
+    routeHashRef.current = nextHash
+    setIsHome(true)
+    setIsApiKeyPage(false)
+    setCategory(null)
+    setIsTryPage(false)
+    setSidebarOpen(false)
+  }
   const openCategory = (nextCategory: ModelCategory) => {
     const nextHash = `#/category/${nextCategory}`
     if (!confirmGenerationExit()) return
@@ -205,13 +218,19 @@ function AppContent() {
       if (rawExample) {
         try { example = JSON.parse(rawExample) } catch { example = rawExample }
       }
-      const markdown = botnoiEndpoint && botnoiView
-        ? endpointMarkdown({ title: botnoiEndpoint.title, method: botnoiEndpoint.method, path: `${BOTNOI_API_BASE_URL}${botnoiEndpoint.path}`, description: botnoiEndpoint.description, parameters: botnoiView.parameters, body: botnoiView.body ?? undefined, responses: botnoiView.responses, example, exampleStatus: primaryExample?.status })
-        : endpointDocs[activeEndpoint.name]
-        ? endpointMarkdown({ title: activeEndpoint.name, ...endpointDocs[activeEndpoint.name] })
-        : wavespeedModels[activeEndpoint.name]
-          ? endpointMarkdown(wavespeedModels[activeEndpoint.name])
-        : activeEndpoint.name === 'Get Seedance 2.5 result' ? seedance25ResultMarkdown : seedance25Markdown
+      let markdown: string
+      if (botnoiEndpoint && botnoiView) {
+        markdown = endpointMarkdown({ title: botnoiEndpoint.title, method: botnoiEndpoint.method, path: `${BOTNOI_API_BASE_URL}${botnoiEndpoint.path}`, description: botnoiEndpoint.description, parameters: botnoiView.parameters, body: botnoiView.body ?? undefined, responses: botnoiView.responses, example, exampleStatus: primaryExample?.status })
+        if (botnoiEndpoint.id === 'account-balances') {
+          markdown += '\n\n## Auth token\n\nGet a Botnoi access token by signing in. Send it as `Authorization: Bearer <BOTNOI_ACCESS_TOKEN>`.\n\n## Balance fields\n\n| Balance | Response field | Meaning |\n| :--- | :--- | :--- |\n| Points | `data.current_point` (fallback: `data.point`, `data.points`, `data.credits`) | Current points balance; read only. |\n| Voicebot coins | `data.coin_voicebot` | Current Voicebot coin balance; read only. |\n\nThe access token authenticates the request; it is not a balance to deduct. This project does not define a direct points or coins deduction endpoint or request variable.'
+        }
+      } else if (endpointDocs[activeEndpoint.name]) {
+        markdown = endpointMarkdown({ title: activeEndpoint.name, ...endpointDocs[activeEndpoint.name] })
+      } else if (wavespeedModels[activeEndpoint.name]) {
+        markdown = endpointMarkdown(wavespeedModels[activeEndpoint.name])
+      } else {
+        markdown = activeEndpoint.name === 'Get Seedance 2.5 result' ? seedance25ResultMarkdown : seedance25Markdown
+      }
       await navigator.clipboard.writeText(markdown)
       setMarkdownCopied(true)
       notify('success', 'คัดลอก Markdown แล้ว')
@@ -508,15 +527,15 @@ function AppContent() {
         <div className="preview-bottom"><span className={`status-dot ${generation.status === 'completed' ? 'ready' : ''}`}/><span>{t(isMediaGeneration ? generation.status === 'idle' ? 'Waiting for generation' : generation.status === 'submitting' ? isImageUpload ? 'Uploading image to Botnoi' : 'Submitting to Botnoi GenAI' : generation.status === 'processing' ? 'Generation in progress' : generation.status === 'completed' ? isImageUpload ? 'Image uploaded' : mediaKind === 'image' ? 'Image ready' : 'Video ready' : 'Generation failed' : preview ? 'Request ready · API not connected' : 'Waiting for generation')}</span>{isGenerating && <span className="generation-spinner" aria-hidden="true" />}<span className="format-label">{resultType.toLowerCase()}</span></div>
       </section>
     </main>
-  </TryItPage> : <IndexPage endpointGroups={endpointGroups} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} activeEndpoint={activeEndpoint} selectEndpoint={selectEndpoint} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} theme={theme} setTheme={setTheme} isHome={isHome || Boolean(category)} isApiKeyPage={isApiKeyPage} onOpenApiKeyPage={openApiKeyPage}>
-    {isHome ? <HomePage endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint} onOpenCategory={openCategory}/> : category ? <CategoryPage category={category} endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint}/> : isApiKeyPage ? <ApiKeyPage /> : (<>
+  </TryItPage> : <IndexPage endpointGroups={endpointGroups} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} activeEndpoint={activeEndpoint} selectEndpoint={selectEndpoint} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} theme={theme} setTheme={setTheme} isHome={isHome} isApiKeyPage={isApiKeyPage} onGoHome={goHome} onOpenApiKeyPage={openApiKeyPage}>
+    {isHome ? <HomePage endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint} onOpenCategory={openCategory} onOpenApiKeyPage={openApiKeyPage}/> : category ? <CategoryPage category={category} endpointGroups={endpointGroups} onSelectEndpoint={selectEndpoint}/> : isApiKeyPage ? <ApiKeyPage /> : (<>
     <main className={`catalog-content ${activeEndpoint.botnoiId || ['Create Seedance 2.5 video', 'Get Seedance 2.5 result'].includes(activeEndpoint.name) || endpointDocs[activeEndpoint.name] || wavespeedModels[activeEndpoint.name] ? 'has-endpoint-docs' : ''}`}>
       {activeEndpoint.botnoiId ? <BotnoiEndpointPage endpoint={botnoiEndpoints[activeEndpoint.botnoiId]} displayTitle={activeEndpoint.name} markdownCopied={markdownCopied} onCopyMarkdown={copyMarkdown} onTry={supportsTryIt(activeEndpoint) ? openTryIt : null}/> : activeEndpoint.name === 'Create Seedance 2.5 video' ? <article className="endpoint-docs">
         <div className="endpoint-docs-title-row"><h1>{t('Create Seedance 2.5 video')}</h1><button className="markdown-copy-button" onClick={copyMarkdown}><Icon name="copy" width="15" height="15"/>{t(markdownCopied ? 'Copied!' : 'Copy as Markdown')}</button></div>
         <p className="endpoint-docs-description">{t('โมเดลสร้างวิดีโอคุณภาพสูง (Flagship) รองรับ Text-to-Video, Image-to-Video (First & Last frame) และ Reference Media')}</p>
         <section className="endpoint-docs-section endpoint-route-section"><h2>{t('Endpoint')}</h2><EndpointRoute method="POST" url={`${BOTNOI_API_BASE_URL}/api/genai/wavespeed/bytedance/seedance-2.5/text-to-video`}/></section>
         <TryItCallout onTry={openTryIt}/>
-        <section className="endpoint-docs-section"><h2>{t('Auth')}</h2><p>{t('Authentication required.')}</p></section>
+        <section className="endpoint-docs-section"><h2>{t('Auth')}</h2><AuthTokenTable provider="botnoi" method="POST"/></section>
         <section className="endpoint-docs-section"><h2>{t('Parameters')}</h2><p>{t('No parameters.')}</p></section>
         <section className="endpoint-docs-section"><h2>{t('Request Body')}</h2>
           <div className="endpoint-table-wrap"><table><thead><tr><th>{t('Required')}</th><th>{t('Content-Type')}</th><th>{t('Shape')}</th></tr></thead><tbody><tr><td>{t('Yes')}</td><td><code>application/json</code></td><td><code>Seedance25Request</code></td></tr></tbody></table></div>
@@ -544,7 +563,7 @@ function AppContent() {
       </article> : activeEndpoint.name === 'Get Seedance 2.5 result' ? <article className="endpoint-docs">
         <div className="endpoint-docs-title-row"><h1>{t('Get Seedance 2.5 result')}</h1><button className="markdown-copy-button" onClick={copyMarkdown}><Icon name="copy" width="15" height="15"/>{t(markdownCopied ? 'Copied!' : 'Copy as Markdown')}</button></div>
         <p className="endpoint-docs-description">{t('ตรวจสอบสถานะและดึง url_video ของ Seedance 2.5 task — ใช้ path เดียวกับ InfiniteTalk และ Motion Control')}</p>
-        <section className="endpoint-docs-section"><h2>{t('Auth')}</h2><p>{t('Authentication required.')}</p></section>
+        <section className="endpoint-docs-section"><h2>{t('Auth')}</h2><AuthTokenTable provider="botnoi" method="GET"/></section>
         <section className="endpoint-docs-section"><h2>{t('Parameters')}</h2><div className="endpoint-table-wrap"><table><thead><tr><th>{t('Name')}</th><th>{t('In')}</th><th>{t('Required')}</th><th>{t('Type')}</th><th>{t('Description')}</th></tr></thead><tbody>
           <tr><td><code>id</code></td><td>{t('path')}</td><td>{t('Yes')}</td><td>string</td><td>{t('Task ID ที่ได้จาก POST (field: data.id)')}</td></tr>
         </tbody></table></div></section>

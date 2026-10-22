@@ -39,7 +39,7 @@ export default function EndpointSearch({ endpointGroups, onSelectEndpoint, varia
     const normalizedQuery = query.trim().toLowerCase()
     if (!normalizedQuery) return []
     return endpointGroups.flatMap(group => group.items
-      .filter(item => item.method !== 'GET' && `${item.name} ${getSearchTitle({ ...item, groupName: group.name })} ${t(item.name)} ${group.name} ${t(group.name)} ${item.path ?? ''} ${item.method} ${t(getSearchDescription({ ...item, groupName: group.name }))}`.toLowerCase().includes(normalizedQuery))
+      .filter(item => (item.method !== 'GET' || Boolean(item.searchKeywords)) && `${item.name} ${getSearchTitle({ ...item, groupName: group.name })} ${t(item.name)} ${group.name} ${t(group.name)} ${item.path ?? ''} ${item.method} ${item.searchKeywords ?? ''} ${t(getSearchDescription({ ...item, groupName: group.name }))}`.toLowerCase().includes(normalizedQuery))
       .map(item => ({ ...item, groupName: group.name })))
   }, [endpointGroups, query, t])
 

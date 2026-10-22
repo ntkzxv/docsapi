@@ -1,0 +1,55 @@
+/* Desktop sidebar rhythm; mobile drawer styles remain in App.css unchanged. */
+@media (min-width: 781px) {
+  .endpoint-sidebar {
+    padding-bottom: 20px;
+  }
+
+  .sidebar-brand {
+    min-height: 68px;
+    padding: 14px 20px 15px;
+    border-bottom: 1px solid #202020;
+  }
+
+  .sidebar-brand:hover {
+    background: #151515;
+  }
+
+  .sidebar-brand:focus-visible {
+    outline: 2px solid #74adff;
+    outline-offset: -2px;
+  }
+
+  .sidebar-brand > img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .sidebar-group {
+    margin-top: 12px;
+  }
+
+  .sidebar-group-title {
+    min-height: 30px;
+    padding: 6px 18px;
+    color: #a4adb9;
+    letter-spacing: .1em;
+  }
+
+  .endpoint-tab {
+    min-height: 38px;
+    padding: 6px 14px 6px 18px;
+    gap: 10px;
+  }
+
+  .light-mode .sidebar-brand {
+    border-bottom-color: #e4e7eb;
+  }
+
+  .light-mode .sidebar-brand:hover {
+    background: #f3f5f8;
+  }
+
+  .light-mode .sidebar-group-title {
+    color: #748091;
+  }
+}

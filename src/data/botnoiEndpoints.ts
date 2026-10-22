@@ -677,4 +677,31 @@ export const endpoints: Record<string, Endpoint> = {
       { status: 404, description: 'Task not found', contentType: 'application/json', shape: 'ErrorResponse' },
     ],
   },
+
+  'account-balances': {
+    id: 'account-balances',
+    title: 'Get account token',
+    method: 'GET',
+    path: '/api/dashboard/get_profile',
+    description: 'อ่านยอด points และ coins ของบัญชีด้วย Botnoi access token; endpoint นี้อ่านยอดคงเหลือ ไม่ได้หักยอด',
+    auth: true,
+    parameters: [],
+    requestBody: null,
+    responses: [
+      {
+        status: 200,
+        description: 'Successful Response',
+        contentType: 'application/json',
+        shape: 'ProfileResponse',
+        example: `{
+  "data": {
+    "current_point": 0,
+    "coin_voicebot": 0
+  }
+}
+// points field fallback: point | points | credits`,
+      },
+      { status: 401, description: 'Unauthorized', contentType: 'application/json', shape: 'ErrorResponse' },
+    ],
+  },
 };

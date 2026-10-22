@@ -1,7 +1,7 @@
 import { endpoints, sidebarGroups } from './botnoiEndpoints'
 import type { EndpointGroup } from '../types/app'
 
-export const botnoiEndpointGroups: EndpointGroup[] = sidebarGroups.map(group => ({
+export const botnoiEndpointGroups: EndpointGroup[] = [...sidebarGroups.map(group => ({
   name: group.label,
   items: group.items.map(item => {
     const endpoint = endpoints[item.id]
@@ -14,4 +14,15 @@ export const botnoiEndpointGroups: EndpointGroup[] = sidebarGroups.map(group => 
       kind: 'botnoi',
     }
   }),
-}))
+})), {
+  name: 'ACCOUNT & BALANCE',
+  items: [{
+    id: 'account-balances',
+    botnoiId: 'account-balances',
+    name: 'Get account token',
+    method: endpoints['account-balances'].method,
+    path: endpoints['account-balances'].path,
+    kind: 'botnoi',
+    searchKeywords: 'token point points coin coins account balance profile',
+  }],
+}]

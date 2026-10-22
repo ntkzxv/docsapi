@@ -10,6 +10,7 @@ export interface EndpointItem {
   method: EndpointMethod
   name: string
   path?: string
+  searchKeywords?: string
 }
 
 export interface EndpointGroup {

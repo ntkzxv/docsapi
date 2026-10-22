@@ -41,9 +41,11 @@ export default function ApiKeyPage() {
         <p className="apikey-desc">{t('สามารถนำ API keys ไปใช้งานเพื่อสร้างเสียงตามที่ต้องการได้ทันที')}</p>
 
         <div className="apikey-notice">
-          <div className="apikey-notice-icon">💡</div>
           <div className="apikey-notice-body">
-            <p className="apikey-notice-title">{t('วิธีใช้งาน API Key')}</p>
+            <div className="apikey-notice-heading">
+              <span className="apikey-notice-icon" aria-hidden="true"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4M10 6.5h.01"/></svg></span>
+              <p className="apikey-notice-title">{t('วิธีใช้งาน API Key')}</p>
+            </div>
             <p className="apikey-notice-text">{t('นำ API Key ไปใส่ใน HTTP header ทุกครั้งที่เรียกใช้งาน API:')}</p>
             <div className="apikey-usage-code">
               <code>botnoi-token: <span className="apikey-code-placeholder">YOUR_API_KEY</span></code>
