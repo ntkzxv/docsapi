@@ -27,7 +27,6 @@ interface IndexPageProps {
 
 export default function IndexPage({ endpointGroups, expandedGroups, setExpandedGroups, activeEndpoint, selectEndpoint, sidebarOpen, setSidebarOpen, theme, setTheme, isHome, isApiKeyPage, isPricingPage, onGoHome, onOpenApiKeyPage, onOpenPricingPage, children }: IndexPageProps) {
   const { t } = useLanguage()
-  const accountEndpoint = endpointGroups.find(group => group.name === 'ACCOUNT & BALANCE')?.items[0]
   const isCurrentEndpoint = (item: EndpointItem) => !isHome && !isApiKeyPage && !isPricingPage && activeEndpoint.name === item.name
   return <>
     {sidebarOpen && <button className="sidebar-scrim" aria-label={t('Close endpoint menu')} onClick={() => setSidebarOpen(false)}/>}
