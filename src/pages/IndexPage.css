@@ -1,4 +1,14 @@
 /* Desktop sidebar rhythm; mobile drawer styles remain in App.css unchanged. */
+.sidebar-method.sidebar-method-price {
+  color: #85b7ff;
+  background: #23364e;
+}
+
+.light-mode .sidebar-method.sidebar-method-price {
+  color: #1765b4;
+  background: #e6f1ff;
+}
+
 @media (min-width: 781px) {
   .endpoint-sidebar {
     padding-bottom: 20px;
