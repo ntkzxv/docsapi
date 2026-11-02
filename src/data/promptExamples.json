@@ -1,0 +1,37 @@
+{
+  "image": [
+    "A cute dog playing in a sunny park, realistic photo, natural light.",
+    "A small puppy sitting on a soft blanket, warm morning light, realistic photo.",
+    "A golden retriever running on a beach, clear blue sky, realistic photography.",
+    "A fluffy white dog beside a flower garden, soft sunlight, detailed photo.",
+    "A happy brown dog looking at the camera in a green park, natural colors."
+  ],
+  "imageEdit": [
+    "Change the background to a sunny park while keeping the dog unchanged.",
+    "Add a red bandana around the dog's neck and preserve the original pose.",
+    "Make the dog look like it is sitting on a sandy beach, with natural shadows.",
+    "Change the dog's collar to blue while keeping the rest of the image unchanged.",
+    "Add a few flowers beside the dog and match the original lighting."
+  ],
+  "video": [
+    "A happy dog runs through a sunny park, with smooth camera movement and natural motion.",
+    "A puppy plays with a ball in a garden, then looks toward the camera.",
+    "A golden retriever runs along the beach as the camera follows smoothly.",
+    "A small dog happily shakes water off after swimming, realistic movement.",
+    "A fluffy dog walks through falling autumn leaves in a gentle tracking shot."
+  ],
+  "avatar": [
+    "A friendly dog looks at the camera and speaks naturally with subtle facial expressions.",
+    "A cheerful puppy gives a short welcome, with gentle head movement and a friendly expression.",
+    "A calm golden retriever speaks to the camera with natural blinking and small movements.",
+    "A playful dog introduces itself with an upbeat expression and subtle gestures.",
+    "A friendly brown dog delivers a short message while maintaining eye contact with the camera."
+  ],
+  "generic": [
+    "A cute dog in a sunny park, realistic style, natural light.",
+    "A playful puppy with a ball, warm colors and a clean composition.",
+    "A golden retriever sitting beside a tree, soft daylight, detailed image.",
+    "A small fluffy dog looking curious in a cozy room, realistic photo.",
+    "A happy dog running through green grass, bright natural lighting."
+  ]
+}

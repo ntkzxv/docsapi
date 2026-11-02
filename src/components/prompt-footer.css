@@ -1,0 +1,5 @@
+@media (max-width: 1050px) {
+  .prompt-input .prompt-footer {
+    justify-content: space-between;
+  }
+}
